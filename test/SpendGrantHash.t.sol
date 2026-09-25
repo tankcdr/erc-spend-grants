@@ -68,7 +68,11 @@ contract SpendGrantHashTest is Test {
 
     function test_goldenVectors() public {
         string memory json = vm.readFile("vectors/v1.json");
-        for (uint256 i = 0; i < 4; i++) {
+        // Pin the vector count to exactly 3 so an appended vector can't silently go unchecked
+        // by the fixed loop bound below.
+        assertTrue(vm.keyExistsJson(json, ".vectors[2]"));
+        assertFalse(vm.keyExistsJson(json, ".vectors[3]"));
+        for (uint256 i = 0; i < 3; i++) {
             string memory p = string.concat(".vectors[", vm.toString(i), "]");
             uint256 chainId = vm.parseJsonUint(json, string.concat(p, ".chainId"));
             address registry = vm.parseJsonAddress(json, string.concat(p, ".revocationRegistry"));
@@ -78,7 +82,7 @@ contract SpendGrantHashTest is Test {
             bytes32 renderingHash = vm.parseJsonBytes32(json, string.concat(p, ".grant.renderingHash"));
             string memory rendering = vm.parseJsonString(json, string.concat(p, ".rendering"));
 
-            uint256 nAssets = (i == 0 || i == 3) ? 1 : 2;
+            uint256 nAssets = (i == 0 || i == 2) ? 1 : 2;
             SpendGrant memory m = _grantFromJson(json, p, nAssets);
             assertEq(keccak256(bytes(rendering)), renderingHash);
             assertEq(m.renderingHash, renderingHash);
@@ -89,7 +93,7 @@ contract SpendGrantHashTest is Test {
             assertEq(harness.digest(chainId, registry, m), digest_);
             assertEq(SpendGrantHash.digest(chainId, registry, m), digest_);
 
-            if (i == 3) {
+            if (i == 2) {
                 bytes memory sig = vm.parseJsonBytes(json, string.concat(p, ".signature"));
                 assertEq(sig.length, 65);
                 bytes32 r;

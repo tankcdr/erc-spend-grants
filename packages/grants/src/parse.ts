@@ -3,7 +3,6 @@ import type { Address, Hex } from "viem";
 import { getRenderingHash, withRenderingHash } from "./render.js";
 import {
   ASSET_COMBINE_AND,
-  ASSET_COMBINE_OR,
   MAX_ASSETS,
   RECIPIENT_MODE_ANY,
   RECIPIENT_MODE_LOCKED,
@@ -120,8 +119,7 @@ function parseRecipientMode(value: unknown, path: string): RecipientMode {
 function parseAssetCombine(value: unknown, path: string): AssetCombine {
   const parsed = parseUint(value, 8, path);
   if (parsed === BigInt(ASSET_COMBINE_AND)) return ASSET_COMBINE_AND;
-  if (parsed === BigInt(ASSET_COMBINE_OR)) return ASSET_COMBINE_OR;
-  throw new SpendGrantError("must be 0 or 1", path);
+  throw new SpendGrantError("must be 0", path);
 }
 
 export function toSpendGrantJson(value: SpendGrantInterchange): SpendGrantJson {
@@ -191,11 +189,8 @@ export function validateSpendGrant(value: SpendGrantInterchange): void {
       "grant.recipient",
     );
   }
-  if (
-    m.assetCombine !== ASSET_COMBINE_AND &&
-    m.assetCombine !== ASSET_COMBINE_OR
-  ) {
-    throw new SpendGrantError("must be 0 or 1", "grant.assetCombine");
+  if (m.assetCombine !== ASSET_COMBINE_AND) {
+    throw new SpendGrantError("must be 0", "grant.assetCombine");
   }
   if (m.windowSeconds <= 0n || m.windowSeconds > UINT64_MAX) {
     throw new SpendGrantError(

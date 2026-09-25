@@ -137,6 +137,14 @@ describe("spend grant JSON parse", () => {
     expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/0 or 1/i);
   });
 
+  it("rejects nonzero assetCombine", () => {
+    const json = asJson(SAMPLE);
+    json.grant.assetCombine = "1";
+    expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/must be 0/i);
+    json.grant.assetCombine = "2";
+    expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/must be 0/i);
+  });
+
   it("rejects duplicate JSON keys", () => {
     const compact = JSON.stringify(toSpendGrantJson(SAMPLE));
     const duplicate = compact.replace(
