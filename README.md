@@ -20,7 +20,7 @@ A principal signs an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) `SpendGra
 - **Where funds may go** — one recipient, or any
 - **Which assets** — native currency is the [ERC-7528](https://eips.ethereum.org/EIPS/eip-7528) address `0xEeee…EEeE`; everything else is an ERC-20. Up to 16 assets, unique and sorted
 - **How much** — each asset has `maxPerCall`, `maxPerWindow`, and `maxTotal`. Zero is never unlimited
-- **How those caps combine** — **and** (independent remaining per asset) or **or** (one shared pie)
+- **How those caps combine** — each asset has its own remaining. `assetCombine` is fixed at `0`; other values are reserved
 - **When** — `validAfter` inclusive, `validUntil` exclusive
 - **Window** — a trailing lookback in seconds (`86400` is 24 hours, not a UTC day). A debit drops out when its age is `>= windowSeconds`. Lifetime never resets
 
@@ -57,7 +57,9 @@ pnpm test      # forge tests (256 fuzz runs, set in foundry.toml), then TypeScri
 
 `pnpm test:sol` and `pnpm test:ts` run either half.
 
-Solidity and TypeScript must reproduce the same domain separator, struct hash, digest, and rendering bytes.
+`pnpm test:symbolic` runs the [Halmos](https://github.com/a16z/halmos) properties in `test/symbolic/` (`pip install halmos`). `pnpm analyze` runs [Aderyn](https://github.com/Cyfrin/aderyn) over `src/`. Neither is part of the ERC bundle.
+
+Solidity and TypeScript must reproduce the same domain separator, struct hash, and digest. TypeScript also checks the canonical rendering bytes.
 
 ## Promote to the ERCs fork
 

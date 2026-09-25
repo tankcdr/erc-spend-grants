@@ -16,7 +16,7 @@ export const SPEND_GRANT_DOMAIN_VERSION = "1";
 
 /** Exact EIP-712 encodeType from the ERC. */
 export const SPEND_GRANT_ENCODE_TYPE =
-  "SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt,bytes32 renderingHash)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)";
+  "SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)";
 
 export const ASSET_LIMIT_ENCODE_TYPE =
   "AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)";
@@ -42,7 +42,6 @@ export const spendGrantTypes = {
     { name: "validAfter", type: "uint64" },
     { name: "validUntil", type: "uint64" },
     { name: "salt", type: "uint256" },
-    { name: "renderingHash", type: "bytes32" },
   ],
 } as const;
 
@@ -88,7 +87,6 @@ export function toSpendGrantTypedData(grant: SpendGrant) {
     validAfter: grant.validAfter,
     validUntil: grant.validUntil,
     salt: grant.salt,
-    renderingHash: grant.renderingHash,
   };
 }
 
