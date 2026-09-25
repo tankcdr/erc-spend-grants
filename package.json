@@ -1,0 +1,18 @@
+{
+  "name": "spend-grants",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "CC0-1.0",
+  "packageManager": "pnpm@10.33.3",
+  "scripts": {
+    "postinstall": "node scripts/install-forge-std.mjs",
+    "build": "forge build && pnpm --filter \"./packages/**\" build",
+    "test": "pnpm test:sol && pnpm test:ts",
+    "test:sol": "forge test",
+    "test:ts": "pnpm --filter @spend-grants/grants test",
+    "typecheck": "pnpm --filter @spend-grants/grants typecheck",
+    "erc:promote": "node scripts/erc-promote.mjs",
+    "erc:check": "node scripts/erc-promote.mjs --check"
+  }
+}

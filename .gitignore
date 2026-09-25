@@ -1,0 +1,27 @@
+# Foundry
+cache/
+out/
+broadcast/
+lib/
+
+# Node
+node_modules/
+dist/
+coverage/
+.npmrc
+# lockfile is committed for CI --frozen-lockfile
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local secrets / env
+.env
+.env.*
+!.env.example
+
+# Forge
+.gas-snapshot
+lcov.info
