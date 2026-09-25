@@ -64,7 +64,9 @@ function assetsReadme(srcFiles, testFiles) {
     `- \`src/\` — compact Solidity reference (CC0): ${srcFiles.join(", ")}\n` +
     `- \`test/\` — Foundry tests for the reference (${testFiles.join(", ")}). They import ` +
     "`../src/` and read vectors at `assets/erc-draft_spend_grants/vectors/v1.json` when run " +
-    "from a Foundry project that has this directory at that path.\n"
+    "from a Foundry project that has this directory at that path.\n\n" +
+    "The full reference repository, with the TypeScript package, Halmos properties, deploy script, " +
+    "and Arc testnet deployment record, is https://github.com/tankcdr/erc-spend-grants.\n"
   );
 }
 
