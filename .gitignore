@@ -25,3 +25,5 @@ coverage/
 # Forge
 .gas-snapshot
 lcov.info
+aderyn-report.md
+aderyn.json

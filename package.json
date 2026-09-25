@@ -11,6 +11,8 @@
     "test": "pnpm test:sol && pnpm test:ts",
     "test:sol": "forge test",
     "test:ts": "pnpm --filter @spend-grants/grants test",
+    "test:symbolic": "halmos --match-contract SpendGrantSymbolic --loop 4 --solver-timeout-assertion 60000",
+    "analyze": "aderyn . --src src -o aderyn-report.md",
     "typecheck": "pnpm --filter @spend-grants/grants typecheck",
     "erc:promote": "node scripts/erc-promote.mjs",
     "erc:check": "node scripts/erc-promote.mjs --check"
