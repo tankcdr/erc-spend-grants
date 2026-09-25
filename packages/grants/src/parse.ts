@@ -1,4 +1,4 @@
-import type { Address, Hex } from "viem";
+import type { Address } from "viem";
 
 import {
   ASSET_COMBINE_AND,
@@ -17,7 +17,6 @@ import {
 } from "./types.js";
 
 const ADDRESS = /^0x[0-9a-f]{40}$/;
-const BYTES32 = /^0x[0-9a-f]{64}$/;
 const UINT = /^(0|[1-9][0-9]*)$/;
 
 const ROOT_KEYS = ["chainId", "revocationRegistry", "grant"] as const;
@@ -79,13 +78,6 @@ export function parseAddress(
     throw new SpendGrantError("must be nonzero", path);
   }
   return value as Address;
-}
-
-export function parseBytes32(value: unknown, path: string): Hex {
-  if (typeof value !== "string" || !BYTES32.test(value)) {
-    throw new SpendGrantError("must be a lowercase 32-byte 0x value", path);
-  }
-  return value as Hex;
 }
 
 export function parseUint(
