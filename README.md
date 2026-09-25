@@ -36,6 +36,8 @@ The registry’s `consume` records the debit. A separate executor must call it i
 | Golden vectors                        | [`vectors/v1.json`](vectors/v1.json)                                                                             |
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
+| ERC-7730 display descriptor           | [`descriptors/spend-grant.erc7730.json`](descriptors/spend-grant.erc7730.json)                                   |
+| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0xE3591E35c6473FB2A9D2f7370d1FE3454864fb32`)             |
 
 Neighboring standards (ERC-7710, 7715, 8226, 8312) are cited in Rationale only. Notes: [`docs/neighbors.md`](docs/neighbors.md).
 
@@ -57,9 +59,26 @@ pnpm test      # forge tests (256 fuzz runs, set in foundry.toml), then TypeScri
 
 `pnpm test:sol` and `pnpm test:ts` run either half.
 
+`pnpm check` runs formatting, lint, both test suites, the typecheck, and `erc:check`. There is no hosted CI; run it before pushing.
+
 `pnpm test:symbolic` runs the [Halmos](https://github.com/a16z/halmos) properties in `test/symbolic/` (`pip install halmos`). `pnpm analyze` runs [Aderyn](https://github.com/Cyfrin/aderyn) over `src/`. Neither is part of the ERC bundle.
 
 Solidity and TypeScript must reproduce the same domain separator, struct hash, and digest. TypeScript also checks the canonical rendering bytes.
+
+## Deploy
+
+`script/Deploy.s.sol` deploys a registry and its executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain.
+
+```bash
+# dry run
+forge script script/Deploy.s.sol --rpc-url arc_testnet --sender <deployer>
+
+# broadcast and verify on the Arc testnet explorer (Blockscout)
+forge script script/Deploy.s.sol --rpc-url arc_testnet --account <keystore> --broadcast \
+  --verify --verifier blockscout --verifier-url https://explorer.testnet.arc.io/api/
+```
+
+The contracts are unaudited and immutable. Deploy to testnets only.
 
 ## Promote to the ERCs fork
 
