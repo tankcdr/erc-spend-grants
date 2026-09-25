@@ -36,6 +36,8 @@ The registry’s `consume` records the debit. A separate executor must call it i
 | Golden vectors                        | [`vectors/v1.json`](vectors/v1.json)                                                                             |
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
+| ERC-7730 display descriptor           | [`descriptors/spend-grant.erc7730.json`](descriptors/spend-grant.erc7730.json)                                   |
+| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0xE3591E35c6473FB2A9D2f7370d1FE3454864fb32`)             |
 
 Neighboring standards (ERC-7710, 7715, 8226, 8312) are cited in Rationale only. Notes: [`docs/neighbors.md`](docs/neighbors.md).
 

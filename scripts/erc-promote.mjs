@@ -28,6 +28,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC_DIR = join(REPO_ROOT, "src");
 const TEST_DIR = join(REPO_ROOT, "test");
 const VECTOR_PATH = join(REPO_ROOT, "vectors", "v1.json");
+const DESCRIPTOR_PATH = join(REPO_ROOT, "descriptors", "spend-grant.erc7730.json");
 const ERC_DOC_PATH = join(REPO_ROOT, "ERCS", "erc-draft_spend_grants.md");
 const FORGE_STD_LIB = join(REPO_ROOT, "lib", "forge-std");
 
@@ -59,6 +60,7 @@ function assetsReadme(srcFiles, testFiles) {
   return (
     "# Assets for Portable Spend Grants\n\n" +
     "- `vectors/v1.json` — golden hashes, rendering, and an EOA signature\n" +
+    "- `erc7730/spend-grant.json` — non-normative ERC-7730 display descriptor for the reference registry deployment\n" +
     `- \`src/\` — compact Solidity reference (CC0): ${srcFiles.join(", ")}\n` +
     `- \`test/\` — Foundry tests for the reference (${testFiles.join(", ")}). They import ` +
     "`../src/` and read vectors at `assets/erc-draft_spend_grants/vectors/v1.json` when run " +
@@ -79,6 +81,7 @@ function buildAssetsPayload() {
     payload.set(`test/${f}`, rewriteVectorPath(readFileSync(join(TEST_DIR, f), "utf8")));
   }
   payload.set("vectors/v1.json", readFileSync(VECTOR_PATH));
+  payload.set("erc7730/spend-grant.json", readFileSync(DESCRIPTOR_PATH));
   payload.set("README.md", assetsReadme(srcFiles, testFiles));
 
   return payload;
