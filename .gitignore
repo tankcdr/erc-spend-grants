@@ -27,3 +27,5 @@ coverage/
 lcov.info
 aderyn-report.md
 aderyn.json
+out-halmos/
+cache-halmos/
