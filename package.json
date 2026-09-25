@@ -13,6 +13,7 @@
     "test:ts": "pnpm --filter @spend-grants/grants test",
     "test:symbolic": "HALMOS_ALLOW_DOWNLOAD=1 FOUNDRY_OUT=out-halmos FOUNDRY_CACHE_PATH=cache-halmos halmos --forge-build-out out-halmos --match-contract '^SpendGrantSymbolic$' --loop 4 --solver bitwuzla --solver-timeout-assertion 180000",
     "analyze": "aderyn . --src src -o aderyn-report.md",
+    "check": "forge fmt --check && forge lint && pnpm test && pnpm typecheck && pnpm erc:check",
     "typecheck": "pnpm --filter @spend-grants/grants typecheck",
     "erc:promote": "node scripts/erc-promote.mjs",
     "erc:check": "node scripts/erc-promote.mjs --check"
