@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {AssetLimit, ISpendGrantRegistry, NATIVE, SpendGrant} from "../src/SpendGrantTypes.sol";
+import {AssetLimit, ISpendGrantRegistry, SpendGrant} from "../src/SpendGrantTypes.sol";
 import {SpendGrantHash} from "../src/SpendGrantHash.sol";
 import {SpendGrantRegistry} from "../src/SpendGrantRegistry.sol";
 import {SpendGrantExecutor} from "../src/SpendGrantExecutor.sol";
@@ -19,13 +19,12 @@ contract DerivedRegistry is SpendGrantRegistry {
     function debitDirect(
         bytes32 grantHash,
         uint64 windowSeconds,
-        uint8 assetCombine,
         AssetLimit memory limit,
         address asset,
         uint256 amount,
         address recipient
     ) external {
-        _debit(grantHash, windowSeconds, assetCombine, limit, asset, amount, recipient);
+        _debit(grantHash, windowSeconds, limit, asset, amount, recipient);
     }
 }
 
@@ -76,7 +75,6 @@ contract InheritanceTest is Test {
         m.validAfter = 1_699_999_000;
         m.validUntil = 1_900_000_000;
         m.salt = 1;
-        m.renderingHash = bytes32(uint256(1));
         m.assets = new AssetLimit[](1);
         m.assets[0] = AssetLimit(address(token), 1e18, 10e18, 100e18);
     }
@@ -97,7 +95,7 @@ contract InheritanceTest is Test {
     function test_derivedRegistry_exposesInternalDebit() public {
         SpendGrant memory m = _grant();
         bytes32 h = SpendGrantHash.digest(block.chainid, address(registry), m);
-        registry.debitDirect(h, m.windowSeconds, m.assetCombine, m.assets[0], address(token), 1e18, recipient);
+        registry.debitDirect(h, m.windowSeconds, m.assets[0], address(token), 1e18, recipient);
         (uint256 spent, uint256 calls) = registry.usage(h, address(token));
         assertEq(spent, 1e18);
         assertEq(calls, 1);

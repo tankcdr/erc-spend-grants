@@ -16,3 +16,10 @@ runs = 256
 runs = 64
 depth = 16
 fail_on_revert = true
+
+[lint]
+# SpendGrantHash mirrors the ERC's EIP-712 definitions line by line; keep it in
+# plain Solidity. Most of the hashes are compile-time constants.
+exclude_lints = ["asm-keccak256"]
+# Halmos requires the `check_` prefix.
+ignore = ["test/symbolic/*.sol"]

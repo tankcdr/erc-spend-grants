@@ -1,15 +1,11 @@
-import { keccak256, toBytes, type Address, type Hex } from "viem";
+import type { Address } from "viem";
 
-import type {
-  SpendGrant,
-  SpendGrantInterchange,
-  SpendGrantWithoutRenderingHash,
-} from "./types.js";
+import type { SpendGrant } from "./types.js";
 
 export interface RenderInput {
   chainId: bigint;
   revocationRegistry: Address;
-  grant: SpendGrantWithoutRenderingHash | SpendGrant;
+  grant: SpendGrant;
 }
 
 function addr(value: string): string {
@@ -45,19 +41,4 @@ export function renderSpendGrant(input: RenderInput): string {
     "",
   );
   return lines.join("\n");
-}
-
-export function getRenderingHash(input: RenderInput): Hex {
-  return keccak256(toBytes(renderSpendGrant(input)));
-}
-
-export function withRenderingHash(input: RenderInput): SpendGrantInterchange {
-  return {
-    chainId: input.chainId,
-    revocationRegistry: input.revocationRegistry,
-    grant: {
-      ...input.grant,
-      renderingHash: getRenderingHash(input),
-    },
-  };
 }

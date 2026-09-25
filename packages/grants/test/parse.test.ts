@@ -9,7 +9,6 @@ import {
   RECIPIENT_MODE_LOCKED,
   stringifySpendGrant,
   toSpendGrantJson,
-  withRenderingHash,
   NATIVE_ADDRESS,
   ZERO_ADDRESS,
   type SpendGrantInterchange,
@@ -92,13 +91,13 @@ describe("spend grant JSON parse", () => {
     const second = SAMPLE.grant.assets[1];
     expect(first).toBeDefined();
     expect(second).toBeDefined();
-    const reversed = withRenderingHash({
+    const reversed: SpendGrantInterchange = {
       ...SAMPLE,
       grant: {
         ...SAMPLE.grant,
         assets: [second!, first!],
       },
-    });
+    };
     expect(() => parseSpendGrant(JSON.stringify(toSpendGrantJson(reversed)))).toThrow(
       /ascending|sorted|unique/i,
     );
@@ -137,6 +136,14 @@ describe("spend grant JSON parse", () => {
     expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/0 or 1/i);
   });
 
+  it("rejects nonzero assetCombine", () => {
+    const json = asJson(SAMPLE);
+    json.grant.assetCombine = "1";
+    expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/must be 0/i);
+    json.grant.assetCombine = "2";
+    expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/must be 0/i);
+  });
+
   it("rejects duplicate JSON keys", () => {
     const compact = JSON.stringify(toSpendGrantJson(SAMPLE));
     const duplicate = compact.replace(
@@ -168,18 +175,16 @@ describe("spend grant JSON parse", () => {
     expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(/lowercase/i);
   });
 
-  it("rejects missing fields, rendering mismatch, and asset count", () => {
+  it("rejects missing fields, a renderingHash member, and asset count", () => {
     const json = asJson(SAMPLE);
     const grant = json.grant as Record<string, unknown>;
     delete grant.salt;
     expect(() => parseSpendGrant(JSON.stringify(json))).toThrow(SpendGrantError);
 
-    const mismatched = asJson(SAMPLE);
-    mismatched.grant.renderingHash =
+    const extra = asJson(SAMPLE) as { grant: Record<string, unknown> };
+    extra.grant.renderingHash =
       "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-    expect(() => parseSpendGrant(JSON.stringify(mismatched))).toThrow(
-      /rendering/i,
-    );
+    expect(() => parseSpendGrant(JSON.stringify(extra))).toThrow(SpendGrantError);
 
     const empty = asJson(SAMPLE);
     empty.grant.assets = [];

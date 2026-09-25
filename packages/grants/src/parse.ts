@@ -1,9 +1,7 @@
-import type { Address, Hex } from "viem";
+import type { Address } from "viem";
 
-import { getRenderingHash, withRenderingHash } from "./render.js";
 import {
   ASSET_COMBINE_AND,
-  ASSET_COMBINE_OR,
   MAX_ASSETS,
   RECIPIENT_MODE_ANY,
   RECIPIENT_MODE_LOCKED,
@@ -12,14 +10,13 @@ import {
   ZERO_ADDRESS,
   type AssetCombine,
   type AssetLimit,
+  type SpendGrant,
   type SpendGrantInterchange,
   type SpendGrantJson,
-  type SpendGrantWithoutRenderingHash,
   type RecipientMode,
 } from "./types.js";
 
 const ADDRESS = /^0x[0-9a-f]{40}$/;
-const BYTES32 = /^0x[0-9a-f]{64}$/;
 const UINT = /^(0|[1-9][0-9]*)$/;
 
 const ROOT_KEYS = ["chainId", "revocationRegistry", "grant"] as const;
@@ -34,7 +31,6 @@ const GRANT_KEYS = [
   "validAfter",
   "validUntil",
   "salt",
-  "renderingHash",
 ] as const;
 const ASSET_KEYS = ["asset", "maxPerCall", "maxPerWindow", "maxTotal"] as const;
 
@@ -84,13 +80,6 @@ export function parseAddress(
   return value as Address;
 }
 
-export function parseBytes32(value: unknown, path: string): Hex {
-  if (typeof value !== "string" || !BYTES32.test(value)) {
-    throw new SpendGrantError("must be a lowercase 32-byte 0x value", path);
-  }
-  return value as Hex;
-}
-
 export function parseUint(
   value: unknown,
   bits: 8 | 64 | 256,
@@ -120,8 +109,7 @@ function parseRecipientMode(value: unknown, path: string): RecipientMode {
 function parseAssetCombine(value: unknown, path: string): AssetCombine {
   const parsed = parseUint(value, 8, path);
   if (parsed === BigInt(ASSET_COMBINE_AND)) return ASSET_COMBINE_AND;
-  if (parsed === BigInt(ASSET_COMBINE_OR)) return ASSET_COMBINE_OR;
-  throw new SpendGrantError("must be 0 or 1", path);
+  throw new SpendGrantError("must be 0", path);
 }
 
 export function toSpendGrantJson(value: SpendGrantInterchange): SpendGrantJson {
@@ -144,7 +132,6 @@ export function toSpendGrantJson(value: SpendGrantInterchange): SpendGrantJson {
       validAfter: value.grant.validAfter.toString(),
       validUntil: value.grant.validUntil.toString(),
       salt: value.grant.salt.toString(),
-      renderingHash: value.grant.renderingHash,
     },
   };
 }
@@ -191,11 +178,8 @@ export function validateSpendGrant(value: SpendGrantInterchange): void {
       "grant.recipient",
     );
   }
-  if (
-    m.assetCombine !== ASSET_COMBINE_AND &&
-    m.assetCombine !== ASSET_COMBINE_OR
-  ) {
-    throw new SpendGrantError("must be 0 or 1", "grant.assetCombine");
+  if (m.assetCombine !== ASSET_COMBINE_AND) {
+    throw new SpendGrantError("must be 0", "grant.assetCombine");
   }
   if (m.windowSeconds <= 0n || m.windowSeconds > UINT64_MAX) {
     throw new SpendGrantError(
@@ -259,21 +243,14 @@ export function validateSpendGrant(value: SpendGrantInterchange): void {
       );
     }
   }
-  parseBytes32(m.renderingHash, "grant.renderingHash");
-  if (getRenderingHash(value) !== m.renderingHash) {
-    throw new SpendGrantError(
-      "does not match canonical rendering",
-      "grant.renderingHash",
-    );
-  }
 }
 
 export function defineSpendGrant(input: {
   chainId: bigint;
   revocationRegistry: Address;
-  grant: SpendGrantWithoutRenderingHash;
+  grant: SpendGrant;
 }): SpendGrantInterchange {
-  const result = withRenderingHash(input);
+  const result: SpendGrantInterchange = { ...input };
   validateSpendGrant(result);
   return result;
 }
@@ -335,7 +312,6 @@ export function parseSpendGrant(input: string | unknown): SpendGrantInterchange 
       validAfter: parseUint(m.validAfter, 64, "grant.validAfter"),
       validUntil: parseUint(m.validUntil, 64, "grant.validUntil"),
       salt: parseUint(m.salt, 256, "grant.salt"),
-      renderingHash: parseBytes32(m.renderingHash, "grant.renderingHash"),
     },
   };
   validateSpendGrant(parsed);

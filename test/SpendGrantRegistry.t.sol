@@ -2,7 +2,15 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {AssetLimit, IERC1271, NATIVE, SpendGrant, SpendGrantError, Reason, WAD} from "../src/SpendGrantTypes.sol";
+import {
+    AssetLimit,
+    IERC1271,
+    MAX_LIVE_DEBITS,
+    NATIVE,
+    SpendGrant,
+    SpendGrantError,
+    Reason
+} from "../src/SpendGrantTypes.sol";
 import {SpendGrantHash} from "../src/SpendGrantHash.sol";
 import {SpendGrantRegistry} from "../src/SpendGrantRegistry.sol";
 import {SpendGrantExecutor} from "../src/SpendGrantExecutor.sol";
@@ -68,9 +76,7 @@ contract SpendGrantRegistryTest is Test {
     address internal recipient;
 
     event GrantRevoked(address indexed principal, bytes32 indexed grantHash);
-    event GrantConsumed(
-        bytes32 indexed grantHash, address indexed asset, uint256 amount, address indexed recipient
-    );
+    event GrantConsumed(bytes32 indexed grantHash, address indexed asset, uint256 amount, address indexed recipient);
 
     function setUp() public {
         principal = vm.addr(PRINCIPAL_PK);
@@ -198,55 +204,6 @@ contract SpendGrantRegistryTest is Test {
         (uint256 tokenRoll,) = registry.rollingUsage(_hash(m), address(token));
         assertEq(nativeRoll, 1 ether);
         assertEq(tokenRoll, 1e18);
-
-        (uint256 lifePie, uint256 winPie) = registry.pieUsed(_hash(m));
-        assertEq(lifePie, 0);
-        assertEq(winPie, 0);
-    }
-
-    function test_orPieRoundUpExhaustion() public {
-        SpendGrant memory m = _orGrant();
-        m.assets[0] = AssetLimit(address(token), 1, 3, 3);
-        m.assets[1] = AssetLimit(NATIVE, 1, 3, 3);
-
-        _consume(m, NATIVE, 1, recipient);
-        _consume(m, NATIVE, 1, recipient);
-        _expect(Reason.OVER_WINDOW_CAP);
-        _consume(m, NATIVE, 1, recipient);
-
-        (uint256 lifePie, uint256 winPie) = registry.pieUsed(_hash(m));
-        uint256 one = (uint256(1) * WAD + 3 - 1) / 3;
-        assertEq(winPie, one * 2);
-        assertEq(lifePie, one * 2);
-        assertTrue(one * 3 > WAD);
-    }
-
-    function test_orLifetimePieAfterWindowExpiry() public {
-        SpendGrant memory m = _orGrant();
-        m.assets[1] = AssetLimit(NATIVE, 1, 3, 6);
-
-        _consume(m, NATIVE, 1, recipient);
-        _consume(m, NATIVE, 1, recipient);
-        _expect(Reason.OVER_WINDOW_CAP);
-        _consume(m, NATIVE, 1, recipient);
-
-        uint256 t = vm.getBlockTimestamp();
-        vm.warp(t + m.windowSeconds);
-        _consume(m, NATIVE, 1, recipient);
-        _consume(m, NATIVE, 1, recipient);
-
-        t = vm.getBlockTimestamp();
-        vm.warp(t + m.windowSeconds);
-        _consume(m, NATIVE, 1, recipient);
-        _expect(Reason.OVER_CUMULATIVE_CAP);
-        _consume(m, NATIVE, 1, recipient);
-
-        (uint256 spent,) = registry.usage(_hash(m), NATIVE);
-        assertEq(spent, 5);
-        (uint256 lifePie,) = registry.pieUsed(_hash(m));
-        uint256 lifeOne = (uint256(1) * WAD + 6 - 1) / 6;
-        assertEq(lifePie, lifeOne * 5);
-        assertTrue(lifeOne * 6 > WAD);
     }
 
     function test_nativeAndErc20_executor() public {
@@ -358,16 +315,16 @@ contract SpendGrantRegistryTest is Test {
         assertEq(rolling, 5);
     }
 
-    function test_windowFullAt256LiveEvents() public {
+    function test_windowFullAtMaxLiveDebitsEvents() public {
         SpendGrant memory m = _andGrant();
-        m.assets[1] = AssetLimit(NATIVE, 1, 10_000, 10_000);
+        m.assets[1] = AssetLimit(NATIVE, 1, type(uint192).max, type(uint192).max);
         m.windowSeconds = 365 days;
 
-        for (uint256 i = 0; i < 256; i++) {
+        for (uint256 i = 0; i < MAX_LIVE_DEBITS; i++) {
             _consume(m, NATIVE, 1, recipient);
         }
         (, uint256 calls) = registry.rollingUsage(_hash(m), NATIVE);
-        assertEq(calls, 256);
+        assertEq(calls, MAX_LIVE_DEBITS);
 
         _expect(Reason.WINDOW_FULL);
         _consume(m, NATIVE, 1, recipient);
@@ -441,6 +398,11 @@ contract SpendGrantRegistryTest is Test {
 
         m = _andGrant();
         m.recipient = address(0);
+        _expect(Reason.INVALID_GRANT);
+        _consume(m, NATIVE, 1, recipient);
+
+        m = _andGrant();
+        m.assetCombine = 1;
         _expect(Reason.INVALID_GRANT);
         _consume(m, NATIVE, 1, recipient);
 
@@ -529,25 +491,6 @@ contract SpendGrantRegistryTest is Test {
         m.salt = 100;
         _expect(Reason.INVALID_GRANT);
         _consume(m, NATIVE, 1, recipient);
-    }
-
-    function test_orPie_mixedAssetsNumericExample() public {
-        // ERC: 50 of A (maxPerWindow 100) then 100 of B (maxPerWindow 200) fills the pie.
-        SpendGrant memory m = _orGrant();
-        m.assets[0] = AssetLimit(address(token), 100, 200, 1_000);
-        m.assets[1] = AssetLimit(NATIVE, 50, 100, 1_000);
-
-        _consume(m, address(token), 100, recipient);
-        _consume(m, NATIVE, 50, recipient);
-
-        (uint256 lifePie, uint256 winPie) = registry.pieUsed(_hash(m));
-        assertEq(winPie, WAD);
-        assertEq(lifePie, (50 * WAD) / 1_000 + (100 * WAD) / 1_000);
-
-        _expect(Reason.OVER_WINDOW_CAP);
-        _consume(m, NATIVE, 1, recipient);
-        _expect(Reason.OVER_WINDOW_CAP);
-        _consume(m, address(token), 1, recipient);
     }
 
     function test_signature_rejectsHighSBadVAndLength() public {
@@ -785,11 +728,8 @@ contract SpendGrantRegistryTest is Test {
             (uint256 rolling,) = registry.rollingUsage(h, NATIVE);
             (, uint256 liveCalls) = registry.rollingUsage(h, NATIVE);
 
-            if (liveCalls >= 256) {
-                _expect(Reason.WINDOW_FULL);
-                _consume(m, NATIVE, amt, recipient);
-                break;
-            }
+            // Check order mirrors the registry: OVER_WINDOW_CAP, then OVER_CUMULATIVE_CAP,
+            // then WINDOW_FULL last (unreachable at nCalls <= 40 but kept for parity).
             if (rolling + amt > m.assets[1].maxPerWindow) {
                 _expect(Reason.OVER_WINDOW_CAP);
                 _consume(m, NATIVE, amt, recipient);
@@ -797,6 +737,11 @@ contract SpendGrantRegistryTest is Test {
             }
             if (spent + amt > m.assets[1].maxTotal) {
                 _expect(Reason.OVER_CUMULATIVE_CAP);
+                _consume(m, NATIVE, amt, recipient);
+                break;
+            }
+            if (liveCalls >= MAX_LIVE_DEBITS) {
+                _expect(Reason.WINDOW_FULL);
                 _consume(m, NATIVE, amt, recipient);
                 break;
             }
@@ -809,45 +754,6 @@ contract SpendGrantRegistryTest is Test {
         assertLe(endRolling, m.assets[1].maxPerWindow);
     }
 
-    function testFuzz_orPieNeverExceedsWad(uint256 amount, uint256 warpBy, uint8 nCalls) public {
-        SpendGrant memory m = _orGrant();
-        m.assets[1] = AssetLimit(NATIVE, 50, 200, 800);
-        nCalls = uint8(bound(nCalls, 1, 40));
-        bytes32 h = _hash(m);
-
-        for (uint256 i = 0; i < nCalls; i++) {
-            uint256 t = vm.getBlockTimestamp();
-            vm.warp(t + bound(warpBy, 0, uint256(m.windowSeconds) * 2));
-            if (vm.getBlockTimestamp() >= m.validUntil) break;
-
-            uint256 amt = bound(amount, 1, m.assets[1].maxPerCall);
-            (uint256 lifePie, uint256 winPie) = registry.pieUsed(h);
-            uint256 wAdd = (amt * WAD + m.assets[1].maxPerWindow - 1) / m.assets[1].maxPerWindow;
-            uint256 tAdd = (amt * WAD + m.assets[1].maxTotal - 1) / m.assets[1].maxTotal;
-            (, uint256 liveCalls) = registry.rollingUsage(h, NATIVE);
-            if (liveCalls >= 256) break;
-            if (winPie + wAdd > WAD) {
-                _expect(Reason.OVER_WINDOW_CAP);
-                _consume(m, NATIVE, amt, recipient);
-                continue;
-            }
-            if (lifePie + tAdd > WAD) {
-                _expect(Reason.OVER_CUMULATIVE_CAP);
-                _consume(m, NATIVE, amt, recipient);
-                break;
-            }
-            _consume(m, NATIVE, amt, recipient);
-        }
-
-        (uint256 endLife, uint256 endWin) = registry.pieUsed(h);
-        assertLe(endLife, WAD);
-        assertLe(endWin, WAD);
-        (uint256 spent,) = registry.usage(h, NATIVE);
-        assertLe(spent, m.assets[1].maxTotal);
-        (uint256 rolling,) = registry.rollingUsage(h, NATIVE);
-        assertLe(rolling, m.assets[1].maxPerWindow);
-    }
-
     function _andGrant() internal view returns (SpendGrant memory m) {
         m.principal = principal;
         m.delegate = delegate;
@@ -858,16 +764,9 @@ contract SpendGrantRegistryTest is Test {
         m.validAfter = 1_700_000_000;
         m.validUntil = 1_800_000_000;
         m.salt = 1;
-        m.renderingHash = bytes32(uint256(1));
         m.assets = new AssetLimit[](2);
         m.assets[0] = AssetLimit(address(token), 1e18, 5e18, 10e18);
         m.assets[1] = AssetLimit(NATIVE, 1 ether, 5 ether, 10 ether);
-    }
-
-    function _orGrant() internal view returns (SpendGrant memory m) {
-        m = _andGrant();
-        m.assetCombine = 1;
-        m.salt = 2;
     }
 
     function _hash(SpendGrant memory m) internal view returns (bytes32) {
