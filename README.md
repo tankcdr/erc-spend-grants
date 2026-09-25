@@ -2,7 +2,7 @@
 
 An unnumbered ERC draft for a signed spend grant: one signature that lets a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps.
 
-- **Draft in this repo:** [`ERCS/erc-draft_spend_grants.md`](ERCS/erc-draft_spend_grants.md)
+- **Draft in this repo:** [`ERCS/erc-0.md`](ERCS/erc-0.md)
 - **Magicians thread:** <https://ethereum-magicians.org/t/erc-tbd-portable-spend-grants/29776>
 - **ERC (once numbered):** `https://github.com/ethereum/ERCs/blob/master/ERCS/erc-XXXX.md`
 
@@ -32,7 +32,7 @@ The registry’s `consume` records the debit. A separate executor must call it i
 
 |                                       |                                                                                                                  |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Draft ERC                             | [`ERCS/erc-draft_spend_grants.md`](ERCS/erc-draft_spend_grants.md)                                               |
+| Draft ERC                             | [`ERCS/erc-0.md`](ERCS/erc-0.md)                                               |
 | Golden vectors                        | [`vectors/v1.json`](vectors/v1.json)                                                                             |
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
@@ -85,8 +85,8 @@ The contracts are unaudited and immutable. Deploy to testnets only.
 This repository holds the only copy of the reference. The ERC submission layout is generated from it:
 
 ```bash
-pnpm erc:check                      # assemble assets/erc-draft_spend_grants in a temp dir and run its tests standalone
-pnpm erc:promote -- --to ../ERCs    # write ERCS/erc-draft_spend_grants.md and assets/erc-draft_spend_grants/ into an ERCs checkout
+pnpm erc:check                      # assemble assets/erc-0 in a temp dir and run its tests standalone
+pnpm erc:promote -- --to ../ERCs    # write ERCS/erc-0.md and assets/erc-0/ into an ERCs checkout
 ```
 
 `erc:promote` only writes files; review and commit in the ERCs checkout.

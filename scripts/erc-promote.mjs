@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC0-1.0
 //
 // Promotes this repo's core Solidity reference into the ethereum/ERCs layout
-// (ERCS/erc-draft_spend_grants.md + assets/erc-draft_spend_grants/{src,test,vectors}).
+// (ERCS/<slug>.md + assets/<slug>/{src,test,vectors,clear-signing}).
 //
 // Usage:
 //   node scripts/erc-promote.mjs --to <dir>   (default: ../ERCs)
@@ -29,10 +29,12 @@ const SRC_DIR = join(REPO_ROOT, "src");
 const TEST_DIR = join(REPO_ROOT, "test");
 const VECTOR_PATH = join(REPO_ROOT, "vectors", "v1.json");
 const DESCRIPTOR_PATH = join(REPO_ROOT, "descriptors", "spend-grant.erc7730.json");
-const ERC_DOC_PATH = join(REPO_ROOT, "ERCS", "erc-draft_spend_grants.md");
+/// @dev ERC file slug: `erc-0` until editors assign a number, then `erc-<N>`.
+const ERC_SLUG = "erc-0";
+const ERC_DOC_PATH = join(REPO_ROOT, "ERCS", `${ERC_SLUG}.md`);
 const FORGE_STD_LIB = join(REPO_ROOT, "lib", "forge-std");
 
-const ASSETS_VECTOR_REL = "assets/erc-draft_spend_grants/vectors/v1.json";
+const ASSETS_VECTOR_REL = `assets/${ERC_SLUG}/vectors/v1.json`;
 
 function parseArgs(argv) {
   const args = { to: null, check: false };
@@ -63,14 +65,14 @@ function assetsReadme(srcFiles, testFiles) {
     "- `clear-signing/spend-grant.json` — non-normative ERC-7730 display descriptor for the reference registry deployment\n" +
     `- \`src/\` — compact Solidity reference (CC0): ${srcFiles.join(", ")}\n` +
     `- \`test/\` — Foundry tests for the reference (${testFiles.join(", ")}). They import ` +
-    "`../src/` and read vectors at `assets/erc-draft_spend_grants/vectors/v1.json` when run " +
+    `\`../src/\` and read vectors at \`${ASSETS_VECTOR_REL}\` when run ` +
     "from a Foundry project that has this directory at that path.\n\n" +
     "The full reference repository, with the TypeScript package, Halmos properties, deploy script, " +
     "and Arc testnet deployment record, is https://github.com/tankcdr/erc-spend-grants.\n"
   );
 }
 
-/// @dev Builds the promoted assets/erc-draft_spend_grants payload in memory: relative path -> content (string or Buffer).
+/// @dev Builds the promoted assets/<slug> payload in memory: relative path -> content (string or Buffer).
 function buildAssetsPayload() {
   const srcFiles = listSolFiles(SRC_DIR);
   const testFiles = listSolFiles(TEST_DIR);
@@ -143,7 +145,7 @@ function promote(toDir) {
   }
 
   const payload = buildAssetsPayload();
-  const assetsDir = join(target, "assets", "erc-draft_spend_grants");
+  const assetsDir = join(target, "assets", ERC_SLUG);
   mkdirSync(assetsDir, { recursive: true });
 
   const removed = removeStaleFiles(assetsDir, payload);
@@ -154,7 +156,7 @@ function promote(toDir) {
 
   console.log(`Promoted to ${target}`);
   console.log(`Wrote ERCS/${basename(ERC_DOC_PATH)}`);
-  console.log(`Wrote ${written.length} file(s) under assets/erc-draft_spend_grants/:`);
+  console.log(`Wrote ${written.length} file(s) under assets/${ERC_SLUG}/:`);
   for (const f of written) console.log(`  ${f}`);
   if (removed.length) {
     console.log(`Removed ${removed.length} stale file(s):`);
@@ -173,14 +175,14 @@ function check() {
   const tmp = mkdtempSync(join(tmpdir(), "erc-promote-"));
   try {
     const payload = buildAssetsPayload();
-    const assetsDir = join(tmp, "assets", "erc-draft_spend_grants");
+    const assetsDir = join(tmp, "assets", ERC_SLUG);
     mkdirSync(assetsDir, { recursive: true });
     writePayload(assetsDir, payload);
 
     const foundryToml =
       "[profile.default]\n" +
-      'src = "assets/erc-draft_spend_grants/src"\n' +
-      'test = "assets/erc-draft_spend_grants/test"\n' +
+      `src = "assets/${ERC_SLUG}/src"\n` +
+      `test = "assets/${ERC_SLUG}/test"\n` +
       'out = "out"\n' +
       `libs = ["${dirname(FORGE_STD_LIB).replace(/\\/g, "/")}"]\n` +
       'solc_version = "0.8.28"\n' +
