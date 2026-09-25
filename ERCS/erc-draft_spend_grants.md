@@ -61,7 +61,6 @@ struct SpendGrant {
     uint64  validAfter;    // inclusive unix seconds
     uint64  validUntil;    // exclusive unix seconds
     uint256 salt;
-    bytes32 renderingHash;
 }
 ```
 
@@ -72,7 +71,7 @@ All fields are required. `salt` distinguishes otherwise identical grants; it is 
 The exact `encodeType` for `SpendGrant` is the following single string, including the concatenated `AssetLimit` definition and with no spaces:
 
 ```
-SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt,bytes32 renderingHash)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)
+SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)
 ```
 
 The `AssetLimit` `encodeType` is:
@@ -134,8 +133,7 @@ hashStruct(SpendGrant) = keccak256(
         assetsArrayHash,
         validAfter,
         validUntil,
-        salt,
-        renderingHash
+        salt
     )
 )
 ```
@@ -195,7 +193,7 @@ A cached ERC-1271 success MUST NOT replace execution-time validation.
 
 ### Canonical rendering
 
-`renderingHash = keccak256(bytes of rendering)` and is omitted from the text. An issuer or wallet that presents the rendering MUST compute that hash over the canonical bytes below and MUST place it in the signed struct. `consume` does not re-verify the text.
+The canonical rendering is a plain-text form of a grant, derived entirely from the signed fields and the domain. It is not signed separately and carries no information the typed data does not. Any display, log, or record that presents a grant's terms as text MUST use exactly these bytes, so that two implementations show the same text for the same grant.
 
 The rendering is ASCII (hence UTF-8), uses LF (`0x0a`) line endings, and contains exactly one trailing LF. It MUST NOT use `CR`, `CRLF`, a `BOM`, trailing spaces, or blank lines. Addresses are `0x` followed by 40 lowercase hexadecimal digits (no mixed-case checksum). Unsigned integers are canonical decimal: `0`, or a digit `1`–`9` followed by zero or more digits, with no sign, fraction, exponent, or leading zeros.
 
@@ -225,11 +223,11 @@ The canonical rendering does not include the executor address. A wallet SHOULD a
 
 ### JSON interchange
 
-The interchange object contains exactly `chainId`, `revocationRegistry`, and `grant`. `grant` contains exactly the SpendGrant fields: `principal`, `delegate`, `recipientMode`, `recipient`, `assetCombine`, `windowSeconds`, `assets`, `validAfter`, `validUntil`, `salt`, `renderingHash`. Each element of `assets` contains exactly `asset`, `maxPerCall`, `maxPerWindow`, `maxTotal`.
+The interchange object contains exactly `chainId`, `revocationRegistry`, and `grant`. `grant` contains exactly the SpendGrant fields: `principal`, `delegate`, `recipientMode`, `recipient`, `assetCombine`, `windowSeconds`, `assets`, `validAfter`, `validUntil`, `salt`. Each element of `assets` contains exactly `asset`, `maxPerCall`, `maxPerWindow`, `maxTotal`.
 
 When hashing a grant from interchange JSON, implementations MUST use `chainId` as the domain `chainId` and `revocationRegistry` as `verifyingContract`.
 
-Unsigned integers MUST be JSON strings in canonical decimal form as defined for rendering, and MUST fit the field width (`uint8`, `uint64`, or `uint256`). Addresses MUST be lowercase `0x` plus 40 hex digits. `renderingHash` MUST be lowercase `0x` plus 64 hex digits. Hex MUST use `[0-9a-f]` only.
+Unsigned integers MUST be JSON strings in canonical decimal form as defined for rendering, and MUST fit the field width (`uint8`, `uint64`, or `uint256`). Addresses MUST be lowercase `0x` plus 40 hex digits. Hex MUST use `[0-9a-f]` only.
 
 Implementations MUST reject extra fields, missing fields, duplicate JSON member names (rejected before object conversion), JSON numbers in place of integer strings, uppercase hex, leading zeros other than the value `0`, out-of-range values, wrong types, `null`, and trailing commas. Object property order and insignificant white space are not signed. Implementations MUST NOT use a JSON byte hash in place of `grantHash`.
 
@@ -256,8 +254,7 @@ Illustrative shape (values are examples, not vectors):
     ],
     "validAfter": "0",
     "validUntil": "1893456000",
-    "salt": "1",
-    "renderingHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "salt": "1"
   }
 }
 ```
@@ -373,7 +370,7 @@ Trailing `lookback`: a UTC-day reset allows two full `maxPerWindow` spends acros
 
 `consume` is restricted to an immutable executor because a public debit function would let any caller fill the window, exhaust caps, or grief `WINDOW_FULL`. The principal selects that executor by choosing the registry. The delegate field remains in the terms for wallets and account-layer policy; the registry does not check it at `consume` time.
 
-`renderingHash` binds what was shown to what was signed without placing the full text on-chain. Sorted unique assets make the typed-data encoding canonical and prevent two disagreeing limits for one address. Fail-closed enumerations mean a future `recipientMode == 2` is invalid to old registries rather than silently treated as "any". No `unrevoke`: a principal who wants to spend again signs a new salt.
+The grant carries no hash of its rendering. The rendering is a function of the signed fields and the domain, so a hash of it would commit to nothing the signature does not already cover, and a wallet displays what it derives from the fields in any case. The canonical text is kept so that every text display of a grant is byte-identical. An application that needs to bind a grant to something outside it, such as a parent grant or an off-chain terms document, can derive `salt` from a commitment to that data, for example `salt = uint256(keccak256(abi.encode(parentGrantHash, index)))`, without a change to this specification. Sorted unique assets make the typed-data encoding canonical and prevent two disagreeing limits for one address. Fail-closed enumerations mean a future `recipientMode == 2` is invalid to old registries rather than silently treated as "any". No `unrevoke`: a principal who wants to spend again signs a new salt.
 
 The live-debit bound exists because exact rolling cannot be a single counter. Because debits are appended in timestamp order, expired debits are always the oldest ones, so an implementation can keep a running window sum and drop expired debits from the front before each check. The reference does this with a fixed ring of 1024 one-word debits (64-bit timestamp, 192-bit amount), so the cost of a `consume` does not grow with the number of live debits and slots are reused once the ring wraps. The cost does grow with the number of expired debits dropped in that call: after a full ring goes idle for longer than the window, the next `consume` drops up to 1024 entries at once. The delegate's transaction pays that cost once, and later spends return to the flat cost. 1024 is a reference storage bound, not a signed `maxCalls`. `usage.calls` is observational for the same reason.
 
@@ -395,7 +392,7 @@ For [ERC-20](./eip-20.md) assets, the principal's allowance to the executor is t
 
 Two asset entries can denote the same underlying balance, for example a chain whose native currency is also exposed through an ERC-20 interface at a different decimal scale. A grant that lists both has two independent budgets over one balance. Issuers SHOULD list only one identifier for such an asset; wallets SHOULD warn when a grant lists a known alias pair.
 
-The registry never moves funds. Safety of the principal's assets depends on the executor calling `consume` in the same transaction as movement and reverting if either step fails. A dishonest executor that the principal bound by signing that registry can move value without a matching debit, or debit without moving. Choosing a registry is choosing an executor. Wallets that omit `executor()` from the pre-sign display hide that binding. Wallets that omit a `renderingHash` check can show one text and sign another.
+The registry never moves funds. Safety of the principal's assets depends on the executor calling `consume` in the same transaction as movement and reverting if either step fails. A dishonest executor that the principal bound by signing that registry can move value without a matching debit, or debit without moving. Choosing a registry is choosing an executor. Wallets that omit `executor()` from the pre-sign display hide that binding.
 
 `consume` is not payable-for-value and does not inspect balance deltas. Fee-on-transfer, elastic-supply, or malicious ERC-20 tokens can make the recorded `amount` differ from the principal's balance change. That is an executor and token-selection problem; the remaining store tracks the `amount` argument.
 

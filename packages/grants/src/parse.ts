@@ -1,6 +1,5 @@
 import type { Address, Hex } from "viem";
 
-import { getRenderingHash, withRenderingHash } from "./render.js";
 import {
   ASSET_COMBINE_AND,
   MAX_ASSETS,
@@ -11,9 +10,9 @@ import {
   ZERO_ADDRESS,
   type AssetCombine,
   type AssetLimit,
+  type SpendGrant,
   type SpendGrantInterchange,
   type SpendGrantJson,
-  type SpendGrantWithoutRenderingHash,
   type RecipientMode,
 } from "./types.js";
 
@@ -33,7 +32,6 @@ const GRANT_KEYS = [
   "validAfter",
   "validUntil",
   "salt",
-  "renderingHash",
 ] as const;
 const ASSET_KEYS = ["asset", "maxPerCall", "maxPerWindow", "maxTotal"] as const;
 
@@ -142,7 +140,6 @@ export function toSpendGrantJson(value: SpendGrantInterchange): SpendGrantJson {
       validAfter: value.grant.validAfter.toString(),
       validUntil: value.grant.validUntil.toString(),
       salt: value.grant.salt.toString(),
-      renderingHash: value.grant.renderingHash,
     },
   };
 }
@@ -254,21 +251,14 @@ export function validateSpendGrant(value: SpendGrantInterchange): void {
       );
     }
   }
-  parseBytes32(m.renderingHash, "grant.renderingHash");
-  if (getRenderingHash(value) !== m.renderingHash) {
-    throw new SpendGrantError(
-      "does not match canonical rendering",
-      "grant.renderingHash",
-    );
-  }
 }
 
 export function defineSpendGrant(input: {
   chainId: bigint;
   revocationRegistry: Address;
-  grant: SpendGrantWithoutRenderingHash;
+  grant: SpendGrant;
 }): SpendGrantInterchange {
-  const result = withRenderingHash(input);
+  const result: SpendGrantInterchange = { ...input };
   validateSpendGrant(result);
   return result;
 }
@@ -330,7 +320,6 @@ export function parseSpendGrant(input: string | unknown): SpendGrantInterchange 
       validAfter: parseUint(m.validAfter, 64, "grant.validAfter"),
       validUntil: parseUint(m.validUntil, 64, "grant.validUntil"),
       salt: parseUint(m.salt, 256, "grant.salt"),
-      renderingHash: parseBytes32(m.renderingHash, "grant.renderingHash"),
     },
   };
   validateSpendGrant(parsed);

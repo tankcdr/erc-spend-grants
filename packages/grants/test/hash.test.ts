@@ -17,7 +17,6 @@ import {
   ASSET_LIMIT_ENCODE_TYPE,
   ASSET_LIMIT_TYPEHASH,
   defineSpendGrant,
-  getRenderingHash,
   hashAssetLimitArray,
   hashSpendGrant,
   hashSpendGrantStruct,
@@ -73,7 +72,6 @@ interface GoldenVector {
   structHash: Hex;
   digest: Hex;
   rendering: string;
-  renderingHash: Hex;
   signature?: Hex;
   signer?: Address;
 }
@@ -186,7 +184,6 @@ function independentStructHash(grant: SpendGrant): Hex {
         { type: "uint64" },
         { type: "uint64" },
         { type: "uint256" },
-        { type: "bytes32" },
       ],
       [
         SPEND_GRANT_TYPEHASH,
@@ -200,7 +197,6 @@ function independentStructHash(grant: SpendGrant): Hex {
         grant.validAfter,
         grant.validUntil,
         grant.salt,
-        grant.renderingHash,
       ],
     ),
   );
@@ -222,7 +218,6 @@ function goldenFromInterchange(
     structHash: hashes.structHash,
     digest: hashes.digest,
     rendering,
-    renderingHash: interchange.grant.renderingHash,
   };
 }
 
@@ -276,7 +271,7 @@ function findHashHarness(): string | undefined {
 describe("spend grant hashing", () => {
   it("locks the ERC encodeType string", () => {
     expect(SPEND_GRANT_ENCODE_TYPE).toBe(
-      "SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt,bytes32 renderingHash)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)",
+      "SpendGrant(address principal,address delegate,uint8 recipientMode,address recipient,uint8 assetCombine,uint64 windowSeconds,AssetLimit[] assets,uint64 validAfter,uint64 validUntil,uint256 salt)AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)",
     );
     expect(ASSET_LIMIT_ENCODE_TYPE).toBe(
       "AssetLimit(address asset,uint256 maxPerCall,uint256 maxPerWindow,uint256 maxTotal)",
@@ -304,8 +299,6 @@ describe("spend grant hashing", () => {
       expect(rendering).toBe(vector.rendering);
       expect(rendering.endsWith("\n")).toBe(true);
       expect(rendering.endsWith("\n\n")).toBe(false);
-      expect(getRenderingHash(interchange)).toBe(vector.renderingHash);
-      expect(interchange.grant.renderingHash).toBe(vector.renderingHash);
       expect(hashes.domainSeparator).toBe(vector.domainSeparator);
       expect(hashes.structHash).toBe(vector.structHash);
       expect(hashes.digest).toBe(vector.digest);

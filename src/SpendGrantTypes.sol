@@ -22,7 +22,6 @@ struct SpendGrant {
     uint64 validAfter;
     uint64 validUntil;
     uint256 salt;
-    bytes32 renderingHash;
 }
 
 /// @dev Align names with ERC-8226 where they match. Extra codes are this ERC's.

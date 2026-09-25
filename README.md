@@ -59,7 +59,7 @@ pnpm test      # forge tests (256 fuzz runs, set in foundry.toml), then TypeScri
 
 `pnpm test:symbolic` runs the [Halmos](https://github.com/a16z/halmos) properties in `test/symbolic/` (`pip install halmos`). `pnpm analyze` runs [Aderyn](https://github.com/Cyfrin/aderyn) over `src/`. Neither is part of the ERC bundle.
 
-Solidity and TypeScript must reproduce the same domain separator, struct hash, digest, and rendering bytes.
+Solidity and TypeScript must reproduce the same domain separator, struct hash, and digest. TypeScript also checks the canonical rendering bytes.
 
 ## Promote to the ERCs fork
 
