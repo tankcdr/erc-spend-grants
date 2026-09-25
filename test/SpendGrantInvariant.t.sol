@@ -100,7 +100,6 @@ contract SpendGrantHandler is Test {
         m.validAfter = 1_700_000_000;
         m.validUntil = 1_900_000_000;
         m.salt = salt;
-        m.renderingHash = bytes32(salt);
         m.assets = new AssetLimit[](2);
         m.assets[0] = AssetLimit(address(token), 1e18, 10e18, 100e18);
         m.assets[1] = AssetLimit(NATIVE, 1 ether, 10 ether, 100 ether);
@@ -119,7 +118,6 @@ contract SpendGrantHandler is Test {
         m.validAfter = 1_700_000_000;
         m.validUntil = 1_900_000_000;
         m.salt = salt;
-        m.renderingHash = bytes32(salt);
         m.assets = new AssetLimit[](2);
         m.assets[0] = AssetLimit(address(token), 1, 2000, type(uint192).max);
         m.assets[1] = AssetLimit(NATIVE, 1, 2000, type(uint192).max);

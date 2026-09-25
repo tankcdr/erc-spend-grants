@@ -173,7 +173,6 @@ contract SpendGrantRingTest is Test {
         m.validAfter = 0;
         m.validUntil = type(uint64).max;
         m.salt = salt;
-        m.renderingHash = bytes32(salt);
         m.assets = new AssetLimit[](1);
         m.assets[0] = AssetLimit(NATIVE, maxPerCall, maxPerWindow, maxTotal);
     }

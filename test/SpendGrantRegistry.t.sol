@@ -764,7 +764,6 @@ contract SpendGrantRegistryTest is Test {
         m.validAfter = 1_700_000_000;
         m.validUntil = 1_800_000_000;
         m.salt = 1;
-        m.renderingHash = bytes32(uint256(1));
         m.assets = new AssetLimit[](2);
         m.assets[0] = AssetLimit(address(token), 1e18, 5e18, 10e18);
         m.assets[1] = AssetLimit(NATIVE, 1 ether, 5 ether, 10 ether);

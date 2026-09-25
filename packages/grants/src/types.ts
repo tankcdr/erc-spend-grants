@@ -36,10 +36,7 @@ export interface SpendGrant {
   validAfter: bigint;
   validUntil: bigint;
   salt: bigint;
-  renderingHash: Hex;
 }
-
-export type SpendGrantWithoutRenderingHash = Omit<SpendGrant, "renderingHash">;
 
 export interface SpendGrantInterchange {
   chainId: bigint;
@@ -68,6 +65,5 @@ export interface SpendGrantJson {
     validAfter: string;
     validUntil: string;
     salt: string;
-    renderingHash: string;
   };
 }

@@ -75,7 +75,6 @@ contract InheritanceTest is Test {
         m.validAfter = 1_699_999_000;
         m.validUntil = 1_900_000_000;
         m.salt = 1;
-        m.renderingHash = bytes32(uint256(1));
         m.assets = new AssetLimit[](1);
         m.assets[0] = AssetLimit(address(token), 1e18, 10e18, 100e18);
     }
