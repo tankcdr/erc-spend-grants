@@ -3,7 +3,7 @@
 An unnumbered ERC draft for a signed spend grant: one signature that lets a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps.
 
 - **Draft in this repo:** [`ERCS/erc-draft_spend_grants.md`](ERCS/erc-draft_spend_grants.md)
-- **Magicians thread:** [placeholder](https://ethereum-magicians.org/t/placeholder) — replace with `https://ethereum-magicians.org/t/<slug>/<id>` when the topic exists
+- **Magicians thread:** <https://ethereum-magicians.org/t/erc-tbd-portable-spend-grants/29776>
 - **ERC (once numbered):** `https://github.com/ethereum/ERCs/blob/master/ERCS/erc-XXXX.md`
 
 ## Why
@@ -45,7 +45,7 @@ Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft
 
 Draft. Unaudited. [CC0 1.0](LICENSE.md).
 
-No ERC number yet — do not invent one. The Magicians thread and the numbered ERC URL above are placeholders until a topic is posted and [ethereum/ERCs](https://github.com/ethereum/ERCs) assigns a number. `discussions-to` must be a real topic of the form `https://ethereum-magicians.org/t/<slug>/<id>`.
+No ERC number yet — do not invent one. The numbered ERC URL above is a placeholder until [ethereum/ERCs](https://github.com/ethereum/ERCs) assigns a number.
 
 ## Check the vectors
 
@@ -91,4 +91,4 @@ pnpm erc:promote -- --to ../ERCs    # write ERCS/erc-draft_spend_grants.md and a
 
 `erc:promote` only writes files; review and commit in the ERCs checkout.
 
-Discussion belongs on the Magicians thread (placeholder above). If you want to send a change, fork and open a pull request.
+Discussion belongs on the [Magicians thread](https://ethereum-magicians.org/t/erc-tbd-portable-spend-grants/29776). If you want to send a change, fork and open a pull request.
