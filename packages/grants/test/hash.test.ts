@@ -14,7 +14,6 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import {
   ASSET_COMBINE_AND,
-  ASSET_COMBINE_OR,
   ASSET_LIMIT_ENCODE_TYPE,
   ASSET_LIMIT_TYPEHASH,
   defineSpendGrant,
@@ -52,13 +51,10 @@ const RECIPIENT =
   "0x3333333333333333333333333333333333333333" as Address;
 const TOKEN_A =
   "0x00000000000000000000000000000000000000a0" as Address;
-const TOKEN_B =
-  "0x00000000000000000000000000000000000000b0" as Address;
 
 const VECTOR_NAMES = [
   "one-asset-locked-recipient",
   "two-asset-and-native-erc20",
-  "two-asset-or",
   "eoa-signed",
 ] as const;
 
@@ -133,25 +129,6 @@ function fixtures(): Record<(typeof VECTOR_NAMES)[number], SpendGrantInterchange
         validAfter: 1_700_000_000n,
         validUntil: 1_800_000_000n,
         salt: 2n,
-      },
-    }),
-    "two-asset-or": defineSpendGrant({
-      chainId: CHAIN_ID,
-      revocationRegistry: REGISTRY,
-      grant: {
-        principal: PRINCIPAL,
-        delegate: DELEGATE,
-        recipientMode: RECIPIENT_MODE_LOCKED,
-        recipient: RECIPIENT,
-        assetCombine: ASSET_COMBINE_OR,
-        windowSeconds: 86400n,
-        assets: [
-          asset(TOKEN_A, 10n, 100n, 1000n),
-          asset(TOKEN_B, 20n, 200n, 2000n),
-        ],
-        validAfter: 1_700_000_000n,
-        validUntil: 1_800_000_000n,
-        salt: 3n,
       },
     }),
     "eoa-signed": defineSpendGrant({

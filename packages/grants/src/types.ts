@@ -12,14 +12,11 @@ export const MAX_ASSETS = 16;
 export const RECIPIENT_MODE_LOCKED = 0;
 export const RECIPIENT_MODE_ANY = 1;
 export const ASSET_COMBINE_AND = 0;
-export const ASSET_COMBINE_OR = 1;
 
 export type RecipientMode =
   | typeof RECIPIENT_MODE_LOCKED
   | typeof RECIPIENT_MODE_ANY;
-export type AssetCombine =
-  | typeof ASSET_COMBINE_AND
-  | typeof ASSET_COMBINE_OR;
+export type AssetCombine = typeof ASSET_COMBINE_AND;
 
 export interface AssetLimit {
   asset: Address;

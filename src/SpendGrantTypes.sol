@@ -58,9 +58,8 @@ bytes32 constant REASON_OVER_CUMULATIVE_CAP = "OVER_CUMULATIVE_CAP";
 bytes32 constant REASON_WINDOW_FULL = "WINDOW_FULL";
 bytes32 constant REASON_UNAUTHORIZED_EXECUTOR = "UNAUTHORIZED_EXECUTOR";
 
-uint256 constant WAD = 1e18;
 uint256 constant MAX_ASSETS = 16;
-uint256 constant MAX_LIVE_DEBITS = 256;
+uint256 constant MAX_LIVE_DEBITS = 1024;
 
 interface IERC1271 {
     function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4);
@@ -68,19 +67,13 @@ interface IERC1271 {
 
 interface ISpendGrantRegistry {
     event GrantRevoked(address indexed principal, bytes32 indexed grantHash);
-    event GrantConsumed(
-        bytes32 indexed grantHash,
-        address indexed asset,
-        uint256 amount,
-        address indexed recipient
-    );
+    event GrantConsumed(bytes32 indexed grantHash, address indexed asset, uint256 amount, address indexed recipient);
 
     function executor() external view returns (address);
     function revoke(bytes32 grantHash) external;
     function revoked(address principal, bytes32 grantHash) external view returns (bool);
     function usage(bytes32 grantHash, address asset) external view returns (uint256 spent, uint256 calls);
     function rollingUsage(bytes32 grantHash, address asset) external view returns (uint256 spent, uint256 calls);
-    function pieUsed(bytes32 grantHash) external view returns (uint256 lifetimeWad, uint256 windowWad);
 
     function consume(
         SpendGrant calldata grant,
