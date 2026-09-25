@@ -71,9 +71,8 @@ contract SpendGrantSymbolic is Test {
     }
 
     /// Time steps are drawn from the expiry boundary (0, window - 1, window, window + 1);
-    /// `check_liveMatchesSpec` covers the liveness arithmetic for every value. Caps and amounts
-    /// are bounded to 64 bits so the solver finishes; `check_debitMatchesCapsFullWidth` covers
-    /// the cap comparison at full width.
+    /// `check_liveMatchesSpec` covers the liveness arithmetic for every value. Amounts and caps
+    /// are full 256-bit values; the Bitwuzla solver finishes this where Z3 and Yices time out.
     function check_debitSequenceMatchesModel(
         uint256 maxPerCall,
         uint256 maxPerWindow,
@@ -82,10 +81,6 @@ contract SpendGrantSymbolic is Test {
         uint8[STEPS] memory gaps
     ) public {
         vm.assume(maxPerCall > 0 && maxPerCall <= maxPerWindow && maxPerWindow <= maxTotal);
-        vm.assume(maxTotal <= type(uint64).max);
-        for (uint256 k = 0; k < STEPS; k++) {
-            vm.assume(amounts[k] <= type(uint64).max);
-        }
         AssetLimit memory limit = AssetLimit(NATIVE, maxPerCall, maxPerWindow, maxTotal);
 
         Model memory m;
