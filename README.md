@@ -61,6 +61,21 @@ pnpm test      # forge tests (256 fuzz runs, set in foundry.toml), then TypeScri
 
 Solidity and TypeScript must reproduce the same domain separator, struct hash, and digest. TypeScript also checks the canonical rendering bytes.
 
+## Deploy
+
+`script/Deploy.s.sol` deploys a registry and its executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain.
+
+```bash
+# dry run
+forge script script/Deploy.s.sol --rpc-url arc_testnet --sender <deployer>
+
+# broadcast and verify on the Arc testnet explorer (Blockscout)
+forge script script/Deploy.s.sol --rpc-url arc_testnet --account <keystore> --broadcast \
+  --verify --verifier blockscout --verifier-url https://explorer.testnet.arc.io/api/
+```
+
+The contracts are unaudited and immutable. Deploy to testnets only.
+
 ## Promote to the ERCs fork
 
 This repository holds the only copy of the reference. The ERC submission layout is generated from it:
