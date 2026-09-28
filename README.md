@@ -24,7 +24,7 @@ A principal signs an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) `SpendGra
 - **When** — `validAfter` inclusive, `validUntil` exclusive
 - **Window** — a trailing lookback in seconds (`86400` is 24 hours, not a UTC day). A debit drops out when its age is `>= windowSeconds`, so spend frees up as each payment expires, not at a reset time; `liveDebits` returns each live payment's expiry, so a wallet can show what is available now and when more frees up. Lifetime never resets
 
-Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271); [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) accounts also accept their own key's signature. Revoke is principal-only, per hash, and permanent.
+Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271); [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) accounts also accept their own key's signature. Revoke is per hash and permanent, and only the principal's own revocation stops a grant: anyone can revoke a hash in their own namespace, which has no effect on it.
 
 The registry’s `consume` records the debit. A separate executor must authenticate who authorized the spend (holding the grant and its signature is not enough, since both are public after first use), pass the address it authenticated to `consume`, and call it in the same transaction as moving the principal's funds, reverting if either step fails. The registry rejects any authorizer other than the grant's delegate. The reference executor authenticates the delegate as its caller and supports ERC-20 assets only; spending native currency from the principal needs an account adapter. This draft does not specify account adapters, ERC-7710 caveats, swap venues, or compliance screening.
 
