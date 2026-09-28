@@ -37,7 +37,7 @@ The registry’s `consume` records the debit. A separate executor must authentic
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
 | ERC-7730 display descriptor           | [`descriptors/spend-grant.erc7730.json`](descriptors/spend-grant.erc7730.json)                                   |
-| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0xE3591E35c6473FB2A9D2f7370d1FE3454864fb32`)             |
+| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0xA4B1Cf19bE43f8c4879e779e82b6Eee026e925f1`)             |
 
 Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft) are cited in the Rationale.
 
