@@ -1,10 +1,10 @@
-# Portable Spend Grants
+# ERC-8427: Portable Spend Grants
 
-An unnumbered ERC draft for a signed spend grant: one signature that lets a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps.
+A draft ERC for a signed spend grant: one signature that lets a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps.
 
-- **Draft in this repo:** [`ERCS/erc-0.md`](ERCS/erc-0.md)
-- **Magicians thread:** <https://ethereum-magicians.org/t/erc-tbd-portable-spend-grants/29776>
-- **ERC (once numbered):** `https://github.com/ethereum/ERCs/blob/master/ERCS/erc-XXXX.md`
+- **Draft in this repo:** [`ERCS/erc-8427.md`](ERCS/erc-8427.md)
+- **Magicians thread:** <https://ethereum-magicians.org/t/erc-8427-portable-spend-grants/29776>
+- **ERC-8427:** submitted as [ethereum/ERCs#2037](https://github.com/ethereum/ERCs/pull/2037); it will be at <https://eips.ethereum.org/EIPS/eip-8427> once merged
 
 ## Why
 
@@ -32,7 +32,7 @@ The registry’s `consume` records the debit. A separate executor must authentic
 
 |                                       |                                                                                                                  |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Draft ERC                             | [`ERCS/erc-0.md`](ERCS/erc-0.md)                                               |
+| Draft ERC                             | [`ERCS/erc-8427.md`](ERCS/erc-8427.md)                                         |
 | Golden vectors                        | [`vectors/v1.json`](vectors/v1.json)                                                                             |
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
@@ -45,7 +45,7 @@ Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft
 
 Draft. Unaudited. [CC0 1.0](LICENSE.md).
 
-No ERC number yet — do not invent one. The numbered ERC URL above is a placeholder until [ethereum/ERCs](https://github.com/ethereum/ERCs) assigns a number.
+The ERCs editors assigned the number 8427. The draft is under review in [ethereum/ERCs#2037](https://github.com/ethereum/ERCs/pull/2037).
 
 ## Check the vectors
 
@@ -85,10 +85,10 @@ The contracts are unaudited and immutable. Deploy to testnets only.
 This repository holds the only copy of the reference. The ERC submission layout is generated from it:
 
 ```bash
-pnpm erc:check                      # assemble assets/erc-0 in a temp dir and run its tests standalone
-pnpm erc:promote -- --to ../ERCs    # write ERCS/erc-0.md and assets/erc-0/ into an ERCs checkout
+pnpm erc:check                      # assemble assets/erc-8427 in a temp dir and run its tests standalone
+pnpm erc:promote -- --to ../ERCs    # write ERCS/erc-8427.md and assets/erc-8427/ into an ERCs checkout
 ```
 
 `erc:promote` only writes files; review and commit in the ERCs checkout.
 
-Discussion belongs on the [Magicians thread](https://ethereum-magicians.org/t/erc-tbd-portable-spend-grants/29776). If you want to send a change, fork and open a pull request.
+Discussion belongs on the [Magicians thread](https://ethereum-magicians.org/t/erc-8427-portable-spend-grants/29776). If you want to send a change, fork and open a pull request.

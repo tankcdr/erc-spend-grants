@@ -29,8 +29,8 @@ const SRC_DIR = join(REPO_ROOT, "src");
 const TEST_DIR = join(REPO_ROOT, "test");
 const VECTOR_PATH = join(REPO_ROOT, "vectors", "v1.json");
 const DESCRIPTOR_PATH = join(REPO_ROOT, "descriptors", "spend-grant.erc7730.json");
-/// @dev ERC file slug: `erc-0` until editors assign a number, then `erc-<N>`.
-const ERC_SLUG = "erc-0";
+/// @dev ERC file slug, `erc-<N>` for the number the ERCs editors assigned.
+const ERC_SLUG = "erc-8427";
 const ERC_DOC_PATH = join(REPO_ROOT, "ERCS", `${ERC_SLUG}.md`);
 const FORGE_STD_LIB = join(REPO_ROOT, "lib", "forge-std");
 
