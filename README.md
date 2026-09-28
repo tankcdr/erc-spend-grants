@@ -22,7 +22,7 @@ A principal signs an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) `SpendGra
 - **How much** — each asset has `maxPerCall`, `maxPerWindow`, and `maxTotal`. Zero is never unlimited
 - **How those caps combine** — each asset has its own remaining. `assetCombine` is fixed at `0`; other values are reserved
 - **When** — `validAfter` inclusive, `validUntil` exclusive
-- **Window** — a trailing lookback in seconds (`86400` is 24 hours, not a UTC day). A debit drops out when its age is `>= windowSeconds`. Lifetime never resets
+- **Window** — a trailing lookback in seconds (`86400` is 24 hours, not a UTC day). A debit drops out when its age is `>= windowSeconds`, so spend frees up as each payment expires, not at a reset time; `liveDebits` returns each live payment's expiry, so a wallet can show what is available now and when more frees up. Lifetime never resets
 
 Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271); [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) accounts also accept their own key's signature. Revoke is principal-only, per hash, and permanent.
 

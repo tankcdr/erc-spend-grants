@@ -90,7 +90,7 @@
               },
               {
                 "path": "maxPerWindow",
-                "label": "Max per window",
+                "label": "Max in any rolling window",
                 "$ref": "$.display.definitions.cap"
               },
               {
