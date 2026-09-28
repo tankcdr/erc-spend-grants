@@ -155,22 +155,55 @@ contract SpendGrantSymbolic is Test {
         registry.revoke(grantHash);
 
         vm.warp(g.validAfter);
-        try registry.consume(g, "", NATIVE, amount, recipient) {
+        try registry.consume(g, "", g.delegate, NATIVE, amount, recipient) {
             assertTrue(false);
         } catch (bytes memory err) {
             assertEq(err, abi.encodeWithSelector(SpendGrantError.selector, Reason.REVOKED));
         }
     }
 
-    /// No caller other than the executor can record a debit.
-    function check_onlyExecutorConsumes(address caller, uint256 amount, address recipient) public {
+    /// No caller other than the executor can record a debit, for any authorizer it claims.
+    function check_onlyExecutorConsumes(address caller, address authorizer, uint256 amount, address recipient) public {
         vm.assume(caller != address(this));
         SpendGrant memory g = _grant(address(new Accept1271()));
         vm.prank(caller);
-        try registry.consume(g, "", NATIVE, amount, recipient) {
+        try registry.consume(g, "", authorizer, NATIVE, amount, recipient) {
             assertTrue(false);
         } catch (bytes memory err) {
             assertEq(err, abi.encodeWithSelector(SpendGrantError.selector, Reason.UNAUTHORIZED_EXECUTOR));
+        }
+    }
+
+    /// For any delegate, no authorizer other than that delegate can record a debit, even when the
+    /// executor (this test contract) calls. The check precedes structural validation, so it holds
+    /// for every delegate value, valid or not.
+    function check_onlyDelegateAuthorizes(address delegate, address authorizer, uint256 amount, address recipient)
+        public
+    {
+        SpendGrant memory g = _grant(address(new Accept1271()));
+        g.delegate = delegate;
+        vm.assume(authorizer != delegate);
+        vm.warp(g.validAfter);
+        try registry.consume(g, "", authorizer, NATIVE, amount, recipient) {
+            assertTrue(false);
+        } catch (bytes memory err) {
+            assertEq(err, abi.encodeWithSelector(SpendGrantError.selector, Reason.UNAUTHORIZED_DELEGATE));
+        }
+    }
+
+    /// Non-vacuity witness for check_onlyDelegateAuthorizes: when the executor (this test contract)
+    /// passes the grant's delegate as authorizer, the debit is recorded.
+    function check_delegateAuthorizes(uint256 amount, address recipient) public {
+        vm.assume(amount > 0 && amount <= 1e18);
+        SpendGrant memory g = _grant(address(new Accept1271()));
+        bytes32 grantHash = SpendGrantHash.digest(block.chainid, address(registry), g);
+        vm.warp(g.validAfter);
+        try registry.consume(g, "", g.delegate, NATIVE, amount, recipient) {
+            (uint256 spent, uint256 calls) = registry.usage(grantHash, NATIVE);
+            assertEq(spent, amount);
+            assertEq(calls, 1);
+        } catch {
+            assertTrue(false);
         }
     }
 

@@ -26,7 +26,7 @@ A principal signs an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) `SpendGra
 
 Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271); [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) accounts also accept their own key's signature. Revoke is principal-only, per hash, and permanent.
 
-The registry’s `consume` records the debit. A separate executor must call it in the same transaction as the transfer and revert if either step fails. This draft does not specify account adapters, ERC-7710 caveats, swap venues, or compliance screening.
+The registry’s `consume` records the debit. A separate executor must authenticate who authorized the spend (holding the grant and its signature is not enough, since both are public after first use), pass the address it authenticated to `consume`, and call it in the same transaction as moving the principal's funds, reverting if either step fails. The registry rejects any authorizer other than the grant's delegate. The reference executor authenticates the delegate as its caller and supports ERC-20 assets only; spending native currency from the principal needs an account adapter. This draft does not specify account adapters, ERC-7710 caveats, swap venues, or compliance screening.
 
 ## This repository
 
