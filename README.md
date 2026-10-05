@@ -39,7 +39,7 @@ The reference ships three executors. `SpendGrantExecutor` authenticates the dele
 | Solidity reference                    | [`src/`](src/), tests in [`test/`](test/)                                                                         |
 | TypeScript hashing / rendering / JSON | [`packages/grants/`](packages/grants/)                                                                           |
 | ERC-7730 display descriptor           | [`descriptors/spend-grant.erc7730.json`](descriptors/spend-grant.erc7730.json)                                   |
-| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0x867C295d38dF1E0d6069bC0b10d1A3148C7E17d5`)             |
+| Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0x37ceecB34B97B39D5B07e8D7Dd974A5a9aD14425`)             |
 
 Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft) are cited in the Rationale.
 
