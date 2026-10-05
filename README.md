@@ -69,7 +69,7 @@ Solidity and TypeScript must reproduce the same domain separator, struct hash, a
 
 ## Deploy
 
-`script/Deploy.s.sol` deploys a registry and the minimal executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain. The redemption executor and its enforcer need an ERC-7710 delegation manager on the chain, which Arc testnet does not have, so they are exercised in the tests only.
+`script/Deploy.s.sol` deploys a registry and the minimal executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain. The redemption executor and its enforcer are exercised in the tests and are not deployed; deploying them means fixing the enforcer to the chain's ERC-7710 delegation manager, and the registry to that executor.
 
 ```bash
 # dry run
