@@ -26,7 +26,9 @@ A principal signs an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) `SpendGra
 
 Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271); [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) accounts also accept their own key's signature. Revoke is per hash and permanent, and only the principal's own revocation stops a grant: anyone can revoke a hash in their own namespace, which has no effect on it.
 
-The registry’s `consume` records the debit. A separate executor must authenticate who authorized the spend (holding the grant and its signature is not enough, since both are public after first use), pass the address it authenticated to `consume`, and call it in the same transaction as moving the principal's funds, reverting if either step fails. The registry rejects any authorizer other than the grant's delegate. The reference executor authenticates the delegate as its caller and supports ERC-20 assets only; spending native currency from the principal needs an account adapter. This draft does not specify account adapters, ERC-7710 caveats, swap venues, or compliance screening.
+The registry’s `consume` records the debit. A separate executor must authenticate who authorized the spend (holding the grant and its signature is not enough, since both are public after first use), pass the address it authenticated to `consume`, and call it in the same transaction as moving the principal's funds, reverting if either step fails. The registry rejects any authorizer other than the grant's delegate.
+
+The reference ships two executors. `SpendGrantExecutor` authenticates the delegate as its caller. `SpendGrantRedemptionExecutor` also accepts ERC-7710 redemptions, where the delegator's account is the caller: a caveat enforcer, `SpendGrantRedemptionEnforcer`, records the redeemer the manager authenticated, scoped to the exact spend and to that account and held in transient storage, and the executor takes the record once before `consume`. Both ask the token for exactly the amount `consume` records and support ERC-20 assets only; a transfer fee or a rebase is the token's behavior, and the caps bound the request, as the allowance does (the tests show the optional balance check as an extension). Spending native currency from the principal needs an account adapter. This draft does not specify account adapters, a caveat format, swap venues, or compliance screening.
 
 ## This repository
 
@@ -67,7 +69,7 @@ Solidity and TypeScript must reproduce the same domain separator, struct hash, a
 
 ## Deploy
 
-`script/Deploy.s.sol` deploys a registry and its executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain.
+`script/Deploy.s.sol` deploys a registry and the minimal executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain. The redemption executor and its enforcer need an ERC-7710 delegation manager on the chain, which Arc testnet does not have, so they are exercised in the tests only.
 
 ```bash
 # dry run
