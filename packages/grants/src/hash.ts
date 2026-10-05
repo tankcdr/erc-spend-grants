@@ -157,3 +157,84 @@ export function hashSpendGrantTypedData(
 export function hashSpendGrant(interchange: SpendGrantInterchange): Hex {
   return hashSpendGrantTypedData(interchange).digest;
 }
+
+// ---------------------------------------------------------------------------
+// SpendAuthorization: what a delegate signs for the reference authorization executor.
+// The executor is the verifying contract, so the domain is per executor deployment.
+
+export const SPEND_AUTHORIZATION_DOMAIN_NAME = "SpendGrantAuthorizationExecutor";
+export const SPEND_AUTHORIZATION_DOMAIN_VERSION = "1";
+
+export const SPEND_AUTHORIZATION_ENCODE_TYPE =
+  "SpendAuthorization(bytes32 grantHash,address asset,uint256 amount,address recipient,uint256 nonce,uint256 deadline)";
+
+export const SPEND_AUTHORIZATION_TYPEHASH = keccak256(
+  toBytes(SPEND_AUTHORIZATION_ENCODE_TYPE),
+);
+
+export const spendAuthorizationTypes = {
+  SpendAuthorization: [
+    { name: "grantHash", type: "bytes32" },
+    { name: "asset", type: "address" },
+    { name: "amount", type: "uint256" },
+    { name: "recipient", type: "address" },
+    { name: "nonce", type: "uint256" },
+    { name: "deadline", type: "uint256" },
+  ],
+} as const;
+
+export interface SpendAuthorization {
+  grantHash: Hex;
+  asset: Address;
+  amount: bigint;
+  recipient: Address;
+  nonce: bigint;
+  deadline: bigint;
+}
+
+export interface SpendAuthorizationDomain {
+  name: typeof SPEND_AUTHORIZATION_DOMAIN_NAME;
+  version: typeof SPEND_AUTHORIZATION_DOMAIN_VERSION;
+  chainId: bigint;
+  verifyingContract: Address;
+}
+
+export function spendAuthorizationDomain(input: {
+  chainId: bigint;
+  executor: Address;
+}): SpendAuthorizationDomain {
+  return {
+    name: SPEND_AUTHORIZATION_DOMAIN_NAME,
+    version: SPEND_AUTHORIZATION_DOMAIN_VERSION,
+    chainId: input.chainId,
+    verifyingContract: input.executor,
+  };
+}
+
+export function hashSpendAuthorizationTypedData(input: {
+  chainId: bigint;
+  executor: Address;
+  authorization: SpendAuthorization;
+}): SpendGrantHashes {
+  const domain = spendAuthorizationDomain(input);
+  const message = { ...input.authorization };
+  const domainSeparatorValue = domainSeparator({ domain });
+  const structHash = hashStruct({
+    types: spendAuthorizationTypes,
+    primaryType: "SpendAuthorization",
+    data: message,
+  });
+  const digest = hashTypedData({
+    domain,
+    types: spendAuthorizationTypes,
+    primaryType: "SpendAuthorization",
+    message,
+  });
+  const reconstructed = keccak256(
+    concatHex(["0x1901", domainSeparatorValue, structHash]),
+  );
+  if (digest !== reconstructed) {
+    throw new Error("authorization digest reconstruction does not match hashTypedData");
+  }
+  return { domainSeparator: domainSeparatorValue, structHash, digest };
+}

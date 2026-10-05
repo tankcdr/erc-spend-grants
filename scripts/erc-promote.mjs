@@ -28,6 +28,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC_DIR = join(REPO_ROOT, "src");
 const TEST_DIR = join(REPO_ROOT, "test");
 const VECTOR_PATH = join(REPO_ROOT, "vectors", "v1.json");
+const AUTHORIZATION_VECTOR_PATH = join(REPO_ROOT, "vectors", "authorization-v1.json");
 const DESCRIPTOR_PATH = join(REPO_ROOT, "descriptors", "spend-grant.erc7730.json");
 /// @dev ERC file slug, `erc-<N>` for the number the ERCs editors assigned.
 const ERC_SLUG = "erc-8427";
@@ -35,6 +36,7 @@ const ERC_DOC_PATH = join(REPO_ROOT, "ERCS", `${ERC_SLUG}.md`);
 const FORGE_STD_LIB = join(REPO_ROOT, "lib", "forge-std");
 
 const ASSETS_VECTOR_REL = `assets/${ERC_SLUG}/vectors/v1.json`;
+const ASSETS_AUTHORIZATION_VECTOR_REL = `assets/${ERC_SLUG}/vectors/authorization-v1.json`;
 
 function parseArgs(argv) {
   const args = { to: null, check: false };
@@ -55,13 +57,19 @@ function listSolFiles(dir) {
 /// @dev Rewrites the vm.readFile vector path used inside the repo (vectors/v1.json)
 /// to the path a promoted test would see when run from an ethereum/ERCs checkout root.
 function rewriteVectorPath(source) {
-  return source.replaceAll('vm.readFile("vectors/v1.json")', `vm.readFile("${ASSETS_VECTOR_REL}")`);
+  return source
+    .replaceAll('vm.readFile("vectors/v1.json")', `vm.readFile("${ASSETS_VECTOR_REL}")`)
+    .replaceAll(
+      'vm.readFile("vectors/authorization-v1.json")',
+      `vm.readFile("${ASSETS_AUTHORIZATION_VECTOR_REL}")`,
+    );
 }
 
 function assetsReadme(srcFiles, testFiles) {
   return (
     "# Assets for Portable Spend Grants\n\n" +
     "- `vectors/v1.json` — golden hashes, rendering, and an EOA signature\n" +
+    "- `vectors/authorization-v1.json` — golden digest and signature for the reference executor's SpendAuthorization\n" +
     "- `clear-signing/spend-grant.json` — non-normative ERC-7730 display descriptor for the reference registry deployment\n" +
     `- \`src/\` — compact Solidity reference (CC0): ${srcFiles.join(", ")}\n` +
     `- \`test/\` — Foundry tests for the reference (${testFiles.join(", ")}). They import ` +
@@ -85,6 +93,7 @@ function buildAssetsPayload() {
     payload.set(`test/${f}`, rewriteVectorPath(readFileSync(join(TEST_DIR, f), "utf8")));
   }
   payload.set("vectors/v1.json", readFileSync(VECTOR_PATH));
+  payload.set("vectors/authorization-v1.json", readFileSync(AUTHORIZATION_VECTOR_PATH));
   payload.set("clear-signing/spend-grant.json", readFileSync(DESCRIPTOR_PATH));
   payload.set("README.md", assetsReadme(srcFiles, testFiles));
 
@@ -186,6 +195,7 @@ function check() {
       'out = "out"\n' +
       `libs = ["${dirname(FORGE_STD_LIB).replace(/\\/g, "/")}"]\n` +
       'solc_version = "0.8.28"\n' +
+      'evm_version = "cancun"\n' +
       "optimizer = true\n" +
       "optimizer_runs = 200\n" +
       "via_ir = true\n" +

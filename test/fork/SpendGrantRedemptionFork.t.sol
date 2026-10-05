@@ -9,6 +9,7 @@ import {SpendGrantExecutor} from "../../src/SpendGrantExecutor.sol";
 import {SpendGrantRedemptionEnforcer} from "../../src/SpendGrantRedemptionEnforcer.sol";
 import {SpendGrantRedemptionExecutor} from "../../src/SpendGrantRedemptionExecutor.sol";
 import {MockERC20} from "../MockERC20.sol";
+import {EvilDelegator} from "../SpendGrantRedemption.t.sol";
 
 /// @dev The parts of MetaMask's DelegationManager that the tests call.
 interface IDelegationManager {
@@ -182,6 +183,38 @@ contract SpendGrantRedemptionForkTest is Test {
         vm.prank(delegate);
         MANAGER.redeemDelegations(_one(abi.encode(chain)), _one(bytes32(0)), _one(execution));
         assertEq(token.balanceOf(recipient), 1e18);
+    }
+
+    function test_fork_hostileIntermediaryCannotRideTheRedemption() public {
+        // The review's High, replayed on the real manager: a middle delegator that is also an enforcer on
+        // its own hop tries to spend again during the hooks. The enforcer writes nothing for it, the
+        // executor rejects it, and the whole redemption reverts.
+        for (uint256 variant = 0; variant < 2; variant++) {
+            EvilDelegator evil = new EvilDelegator(executor, variant == 0);
+            SpendGrant memory m = _grant();
+            m.salt = 100 + variant;
+            bytes memory sig = _sign(m);
+
+            IDelegationManager.Delegation memory root = _signedByAccount(_root(address(evil), true));
+            IDelegationManager.Delegation memory leaf;
+            leaf.delegate = delegate;
+            leaf.delegator = address(evil);
+            leaf.authority = MANAGER.getDelegationHash(root);
+            leaf.caveats = new IDelegationManager.Caveat[](2);
+            leaf.caveats[0] = IDelegationManager.Caveat(address(enforcer), "", "");
+            leaf.caveats[1] = IDelegationManager.Caveat(address(evil), "", "");
+            leaf.signature = hex"00"; // evil's ERC-1271 accepts anything
+            IDelegationManager.Delegation[] memory chain = new IDelegationManager.Delegation[](2);
+            chain[0] = leaf;
+            chain[1] = root;
+
+            vm.prank(delegate);
+            vm.expectRevert(abi.encodeWithSelector(SpendGrantError.selector, Reason.UNAUTHORIZED_DELEGATE));
+            MANAGER.redeemDelegations(
+                _one(abi.encode(chain)), _one(bytes32(0)), _one(_execution(m, sig, 1e18, recipient))
+            );
+            assertEq(token.balanceOf(recipient), 0);
+        }
     }
 
     // ---------------------------------------------------------------- helpers

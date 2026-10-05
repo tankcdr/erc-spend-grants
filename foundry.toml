@@ -4,6 +4,9 @@ out = "out"
 libs = ["lib"]
 test = "test"
 solc_version = "0.8.28"
+# Pinned so the bytecode and its metadata do not move with Foundry's default. The registry and executors
+# need Shanghai (PUSH0); the redemption enforcer needs Cancun (transient storage).
+evm_version = "cancun"
 optimizer = true
 optimizer_runs = 200
 via_ir = true
