@@ -23,7 +23,7 @@ contract SymbolicRegistry is SpendGrantRegistry {
     }
 
     function debitDirect(bytes32 grantHash, uint64 windowSeconds, AssetLimit memory limit, uint256 amount) external {
-        _debit(grantHash, windowSeconds, limit, NATIVE, amount, address(0xC0C));
+        _debit(grantHash, windowSeconds, limit, NATIVE, amount);
     }
 }
 
@@ -196,6 +196,11 @@ contract SpendGrantSymbolic is Test {
     function check_delegateAuthorizes(uint256 amount, address recipient) public {
         vm.assume(amount > 0 && amount <= 1e18);
         SpendGrant memory g = _grant(address(new Accept1271()));
+        // The payee rules reject these four; mode 1 accepts every other recipient.
+        vm.assume(
+            recipient != address(0) && recipient != g.principal && recipient != address(registry)
+                && recipient != address(this)
+        );
         bytes32 grantHash = SpendGrantHash.digest(block.chainid, address(registry), g);
         vm.warp(g.validAfter);
         try registry.consume(g, "", g.delegate, NATIVE, amount, recipient) {
@@ -204,6 +209,21 @@ contract SpendGrantSymbolic is Test {
             assertEq(calls, 1);
         } catch {
             assertTrue(false);
+        }
+    }
+
+    /// No payee of zero, the principal, the registry, or the executor is ever recorded, whatever the amount.
+    function check_rejectedPayeesNeverConsume(uint256 amount, uint8 which) public {
+        vm.assume(which < 4);
+        SpendGrant memory g = _grant(address(new Accept1271()));
+        // A branch rather than an array index: Halmos cannot read memory at a symbolic offset.
+        address payee =
+            which == 0 ? address(0) : which == 1 ? g.principal : which == 2 ? address(registry) : address(this);
+        vm.warp(g.validAfter);
+        try registry.consume(g, "", g.delegate, NATIVE, amount, payee) {
+            assertTrue(false);
+        } catch (bytes memory err) {
+            assertEq(err, abi.encodeWithSelector(SpendGrantError.selector, Reason.WRONG_RECIPIENT));
         }
     }
 

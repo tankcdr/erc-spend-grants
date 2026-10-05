@@ -28,7 +28,7 @@ Contract principals validate with [ERC-1271](https://eips.ethereum.org/EIPS/eip-
 
 The registry’s `consume` records the debit. It rejects a payee of zero, the principal, the registry, or the executor in either mode, checks code only on the asset being spent, and emits `GrantConsumed` indexed by grant hash, principal, and recipient so a principal's wallet can find its spends by address. A separate executor must authenticate who authorized the spend (holding the grant and its signature is not enough, since both are public after first use), pass the address it authenticated to `consume`, and call it in the same transaction as moving the principal's funds, reverting if either step fails. The registry rejects any authorizer other than the grant's delegate.
 
-The reference ships two executors. `SpendGrantExecutor` authenticates the delegate as its caller. `SpendGrantRedemptionExecutor` also accepts ERC-7710 redemptions, where the delegator's account is the caller: a caveat enforcer, `SpendGrantRedemptionEnforcer`, records the redeemer the manager authenticated, scoped to the exact spend and to that account and held in transient storage, and the executor takes the record once before `consume`. Both ask the token for exactly the amount `consume` records and support ERC-20 assets only; a transfer fee or a rebase is the token's behavior, and the caps bound the request, as the allowance does (the tests show the optional balance check as an extension). Spending native currency from the principal needs an account adapter. This draft does not specify account adapters, a caveat format, swap venues, or compliance screening.
+The reference ships three executors. `SpendGrantExecutor` authenticates the delegate as its caller. `SpendGrantAuthorizationExecutor` also accepts a delegate-signed EIP-712 authorization that anyone may submit, with the grant hash computed by the executor, a nonce recorded under the signer before `consume`, a deadline, and cancellation. `SpendGrantRedemptionExecutor` also accepts ERC-7710 redemptions, where the delegator's account is the caller: a caveat enforcer, `SpendGrantRedemptionEnforcer`, records the redeemer the manager authenticated, scoped to the exact spend and to that account and held in transient storage, and the executor takes the record once before `consume`. Both ask the token for exactly the amount `consume` records and support ERC-20 assets only; a transfer fee or a rebase is the token's behavior, and the caps bound the request, as the allowance does (the tests show the optional balance check as an extension). Spending native currency from the principal needs an account adapter. This draft does not specify account adapters, a caveat format, swap venues, or compliance screening.
 
 ## This repository
 
@@ -63,13 +63,13 @@ pnpm test      # forge tests (256 fuzz runs, set in foundry.toml), then TypeScri
 
 `pnpm check` runs formatting, lint, both test suites, the typecheck, and `erc:check`. There is no hosted CI; run it before pushing.
 
-`pnpm test:symbolic` runs the [Halmos](https://github.com/a16z/halmos) properties in `test/symbolic/` (`pip install halmos`). `pnpm analyze` runs [Aderyn](https://github.com/Cyfrin/aderyn) over `src/`. Neither is part of the ERC bundle.
+`pnpm test:symbolic` runs the [Halmos](https://github.com/a16z/halmos) properties in `test/symbolic/` (`pip install halmos`). `pnpm analyze` runs [Aderyn](https://github.com/Cyfrin/aderyn) over `src/`. `pnpm test:fork` runs `test/fork/`, which drives the redemption enforcer and executor through MetaMask's DelegationManager v1.3.0 as deployed on Arc testnet, over the `arc_testnet` RPC; without `FORK_TESTS=true` those tests are skipped, so `pnpm check` stays offline. None of the three is part of the ERC bundle.
 
 Solidity and TypeScript must reproduce the same domain separator, struct hash, and digest. TypeScript also checks the canonical rendering bytes.
 
 ## Deploy
 
-`script/Deploy.s.sol` deploys a registry and the minimal executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain. The redemption executor and its enforcer are exercised in the tests and are not deployed; deploying them means fixing the enforcer to the chain's ERC-7710 delegation manager, and the registry to that executor.
+`script/Deploy.s.sol` deploys a registry and the minimal executor and writes the addresses to `deployments/<chainId>.json`. Use a fresh account (nonce 0) so the addresses match on every chain. The authorization executor, the redemption executor, and its enforcer are exercised in the tests and are not deployed; deploying the redemption pair means fixing the enforcer to the chain's ERC-7710 delegation manager, and the registry to that executor.
 
 ```bash
 # dry run

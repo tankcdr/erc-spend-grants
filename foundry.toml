@@ -24,5 +24,5 @@ fail_on_revert = true
 # SpendGrantHash mirrors the ERC's EIP-712 definitions line by line; keep it in
 # plain Solidity. Most of the hashes are compile-time constants.
 exclude_lints = ["asm-keccak256"]
-# Halmos requires the `check_` prefix.
-ignore = ["test/symbolic/*.sol"]
+# Halmos requires the `check_` prefix; the fork tests mirror MetaMask's constant getter names.
+ignore = ["test/symbolic/*.sol", "test/fork/*.sol"]
