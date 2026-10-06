@@ -162,7 +162,7 @@ export function hashSpendGrant(interchange: SpendGrantInterchange): Hex {
 // SpendAuthorization: what a delegate signs for the reference authorization executor.
 // The executor is the verifying contract, so the domain is per executor deployment.
 
-export const SPEND_AUTHORIZATION_DOMAIN_NAME = "SpendGrantAuthorizationExecutor";
+export const SPEND_AUTHORIZATION_DOMAIN_NAME = "SpendAuthorization";
 export const SPEND_AUTHORIZATION_DOMAIN_VERSION = "1";
 
 export const SPEND_AUTHORIZATION_ENCODE_TYPE =

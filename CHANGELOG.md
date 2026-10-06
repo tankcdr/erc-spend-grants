@@ -12,6 +12,11 @@ Two parts: text corrections, then one interface addition and two reference decis
 
 - **interface** `hashGrant(grant)` returns the hash the registry computes for a grant. Wallets revoke that value rather than one they computed, because `revoke` cannot tell a wrong hash from a right one.
 
+### Reference
+
+- The deploy script binds the registry to `SpendGrantAuthorizationExecutor`, which accepts direct calls and relayed delegate-signed authorizations. A registry fixes its executor for good, so the relayed path has to be chosen at deployment.
+- The authorization's EIP-712 domain name is `SpendAuthorization`, version `1`, no longer the contract's name. `vectors/authorization-v1.json` is regenerated.
+
 ### Corrections (no interface change)
 
 ### Specification
