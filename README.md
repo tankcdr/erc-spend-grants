@@ -43,6 +43,8 @@ The reference ships three executors. `SpendGrantExecutor` authenticates the dele
 
 Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft) are cited in the Rationale.
 
+What changed and when, including which changes need a new registry, is in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Status
 
 Draft. Unaudited. [CC0 1.0](LICENSE.md).
