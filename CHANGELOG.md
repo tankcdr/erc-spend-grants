@@ -6,7 +6,13 @@ The draft is [`ERCS/erc-8427.md`](ERCS/erc-8427.md), under review in [ethereum/E
 
 ## 2026-10-06
 
-Corrections only. No interface change, no reference change, no redeploy.
+Two parts: text corrections, then one interface addition and two reference decisions made ahead of the next deployment.
+
+### Specification
+
+- **interface** `hashGrant(grant)` returns the hash the registry computes for a grant. Wallets revoke that value rather than one they computed, because `revoke` cannot tell a wrong hash from a right one.
+
+### Corrections (no interface change)
 
 ### Specification
 
