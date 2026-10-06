@@ -14,6 +14,7 @@ Corrections only. No interface change, no reference change, no redeploy.
 - Revocation: wallets keep `grantSignature` with the grant. The confirmation step is restated so it can be carried out: check the stored signature against the computed hash, revoke, then read `revoked`; or simulate `consume` with the signature, the delegate as authorizer, and a time inside validity.
 - Delegation framework: the hook and redeemer-record mechanics are stated as conditions of a framework rather than as properties of ERC-7710. Every requirement on the enforcer and executor is unchanged, and any other source of the redeemer must give the same properties.
 - Rationale: expired debits are dropped by `consume` or `evict`; the payee rule names the spent asset and why.
+- Replacing a grant: terms cannot be changed in place in either direction. A replacement is released to the delegate only after the earlier grant reads as revoked; wallets show the change as incomplete until then; a replacement starts with fresh usage, so its lifetime cap is sized from what the earlier grant had left and the window reset is disclosed or avoided with `validAfter`. Raised on the thread. `test/SpendGrantReplacement.t.sol` pins the behavior the text relies on.
 - Security Considerations: a principal without gas can stop every grant over a permit-capable token with a signed zero approval; disabling a delegation is not a revocation; a signer that signs raw digests sees no domain, so domain-scoped session-key policies need a format that carries the typed data.
 
 ## 2026-10-05
