@@ -4,6 +4,10 @@ What changed in the ERC-8427 draft, its reference implementation, and the Arc te
 
 The draft is [`ERCS/erc-8427.md`](ERCS/erc-8427.md), under review in [ethereum/ERCs#2037](https://github.com/ethereum/ERCs/pull/2037). Discussion is on the [Magicians thread](https://ethereum-magicians.org/t/erc-8427-portable-spend-grants/29776).
 
+## 2026-10-26
+
+- The abstract, Motivation, and README open with the funding model: the principal keeps its funds in one account and each delegate holds a capped, revocable right to spend from it instead of a balance. A new Rationale paragraph gives the reasons (no stranded balances, no top-ups or sweeps, revocation that moves nothing, one account, limits readable on chain) and the cost, concentration behind the executor allowance. No change to the interface.
+
 ## 2026-10-14
 
 - Integration review fixes. x402: the facilitator, in Solidity and TypeScript, refuses a deadline beyond `maxTimeoutSeconds` or within 5 seconds, reports `insufficient_funds` only for a real balance or allowance shortfall, refuses native currency, keeps the transaction hash when a send fails and reconciles after a timeout, and draws a random nonce; the Solidity README's error table is normative. Safe: the stale update is shown to be `StaleVersion`, the fallback-handler requirement and SignMessageLib approval are tested, and the approval is bounded. ERC-8004: the salt includes the identity chain, and `unsetAgentWallet`, contract wallets, and the deployed `MetadataSet` events are tested. ERC-4337: per-run keys and salts, fees at Arc's base fee, and a four-operation bundle that exhausts the window.

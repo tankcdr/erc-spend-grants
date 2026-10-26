@@ -1,12 +1,16 @@
 # ERC-8427: Portable Spend Grants
 
-A draft ERC for registered spend grants: terms a principal registers on chain that let a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps, changed in place or revoked by id.
+A spend grant lets a principal keep its funds in one account and give each agent a capped, revocable right to spend from it, instead of moving a balance into every agent's wallet. The agent holds a grant id, not money.
+
+This draft ERC defines the grant: terms a principal registers on chain that let a delegate spend native currency and ERC-20s under per-call, rolling, and lifetime caps, changed in place or revoked by id.
 
 - **Draft in this repo:** [`ERCS/erc-8427.md`](ERCS/erc-8427.md)
 - **Magicians thread:** <https://ethereum-magicians.org/t/erc-8427-portable-spend-grants/29776>
 - **ERC-8427:** submitted as [ethereum/ERCs#2037](https://github.com/ethereum/ERCs/pull/2037); it will be at <https://eips.ethereum.org/EIPS/eip-8427> once merged
 
 ## Why
+
+The common way to let agents spend is to fund a wallet for each one and enforce limits in an off-chain policy service. Every wallet strands a balance, needs top-up and sweep jobs, and has to be drained to cut the agent off, and its limits can be read only through that service. Under a grant the funds stay with the principal: nothing is stranded, revoking is one transaction that moves nothing, zeroing the allowance to the executor stops every grant at once, every payment comes from one account, and the policy is on chain where anyone can read it. The cost is concentration: the principal's allowance to the executor reaches its whole balance, so keep that allowance close to what the grants can still spend.
 
 `approve` is usually one token, no expiry, and no trailing window. “Daily” allowances that reset at midnight let someone spend the cap twice in two hours. Wallet permission APIs exist, but they leave the meaning of the permission opaque, so two implementations can show the same hash and still disagree on the window or whether a second asset has its own remaining.
 
