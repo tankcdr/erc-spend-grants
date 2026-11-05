@@ -4,6 +4,10 @@ What changed in the ERC-8427 draft, its reference implementation, and the Arc te
 
 The draft is [`ERCS/erc-8427.md`](ERCS/erc-8427.md), under review in [ethereum/ERCs#2037](https://github.com/ethereum/ERCs/pull/2037). Discussion is on the [Magicians thread](https://ethereum-magicians.org/t/erc-8427-portable-spend-grants/29776).
 
+## 2026-11-05
+
+- The Rationale gives the second reason the movement comes from the principal's own balance: that balance and the principal's allowance to the executor are the bound the principal sets outside the registry, which `grantState` reports and a zero allowance removes, while a draw on credit is bounded by a limit the lender sets. Raised on the Magicians thread by an executor that pays from an ERC-8460 credit line. No change to the interface.
+
 ## 2026-10-26
 
 - The abstract, Motivation, and README open with the funding model: the principal keeps its funds in one account and each delegate holds a capped, revocable right to spend from it instead of a balance. A new Rationale paragraph gives the reasons (no stranded balances, no top-ups or sweeps, revocation that moves nothing, one account, limits readable on chain) and the cost, concentration behind the executor allowance. No change to the interface.
