@@ -7,6 +7,7 @@ The draft is [`ERCS/erc-8427.md`](ERCS/erc-8427.md), under review in [ethereum/E
 ## 2026-11-05
 
 - The Rationale gives the second reason the movement comes from the principal's own balance: that balance and the principal's allowance to the executor are the bound the principal sets outside the registry, which `grantState` reports and a zero allowance removes, while a draw on credit is bounded by a limit the lender sets. Raised on the Magicians thread by an executor that pays from an ERC-8460 credit line. No change to the interface.
+- The Rationale no longer cites the bounded-agent-actions draft, which is an unmerged ERCs pull request; the README's list of cited standards drops it too. No change to the interface.
 
 ## 2026-10-26
 

@@ -47,7 +47,7 @@ The reference ships three executors. Each takes a `grantId` and reads the grant'
 | Integration tests                     | [`test/integrations/`](test/integrations/): [x402](test/integrations/x402/) payments settled under a grant; [Safe](test/integrations/safe/) as principal and delegate on Arc (fork); [ERC-8004](test/integrations/erc8004/) agent wallet as delegate on Arc (fork); [ERC-4337](test/integrations/erc4337/) SimpleAccount as delegate through the EntryPoint on Arc (fork) |
 | Deployments                           | [`deployments/`](deployments/) (Arc testnet: registry `0xe8987A22a1e3fd4a63cB517A9476B9d214388287`, executor `0xB99785329AbEc9936b6EF6350015be39D3392646`) |
 
-Neighboring standards (ERC-7710, 7715, 8226, and the bounded-agent-actions draft) are cited in the Rationale.
+Neighboring standards (ERC-7710, 7715, and 8226) are cited in the Rationale.
 
 Integrations built by others against this reference:
 
